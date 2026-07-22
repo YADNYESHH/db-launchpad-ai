@@ -57,7 +57,8 @@ This is the email/ID you should use when prompted for SSO login.
 
 #### Platform-Specific Login Instructions
 
-*   **Microsoft Azure:** Start with [Microsoft Azure](http://portal.azure.com). Use your SSO ID and the **initial password** given in your briefing. You will be prompted to change it and set up 2FA.
+*   **Microsoft Azure:** Start with [Microsoft Azure](http://port
+al.azure.com). Use your SSO ID and the **initial password** given in your briefing. You will be prompted to change it and set up 2FA.
 *   **Google Cloud Platform:** Login via the [GCP SSO link](https://www.google.com/a/db-hackathon.com/ServiceLogin?continue=https://console.cloud.google.com).
 *   **GitHub:** You must accept the invitation sent to your personal email. Attempt to [login to GitHub via SSO](https://github.com/orgs/db-hackathon/sso) first, then link your personal GitHub account.
 *   **Terraform Cloud:** [Login via SSO](https://app.terraform.io/sso/sign-in) and use `db-hackathon-2026` for the *Organization Name*.
@@ -313,6 +314,8 @@ A set of useful input variables has been populated for you:
 
 #### Code & Setup Tutorials
 
+* **DB:**
+    * [Participant Briefing Deck](https://storage.cloud.google.com/hackathon_shared_storage_2026/Hackathon_Participant_Briefing26.pdf)
 *   **Google Cloud:**
     *   [Generative AI Training Resources](https://cloud.google.com/blog/topics/training-certifications/new-google-cloud-generative-ai-training-resources)
     *   [Example GCP Apps](https://github.com/db-hackathon/support/tree/main/google-examples)
