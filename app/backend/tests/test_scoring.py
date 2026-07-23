@@ -20,7 +20,7 @@ def test_rollup_weights_sum_to_100():
 
 def test_every_sub_score_driver_table_sums_to_100(novatrade_ctx):
     for sub_score_type, table in novatrade_ctx.weight_config.sub_score_driver_tables.items():
-        total = sum(weight for _, weight in table)
+        total = sum(dw.weight for dw in table)
         assert total == 100, f"{sub_score_type} driver weights sum to {total}, not 100"
 
 

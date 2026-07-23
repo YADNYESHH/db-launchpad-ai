@@ -6,6 +6,7 @@ from pydantic import BaseModel
 
 from .enums import ApprovalStatus
 from .profile import ExpansionSignal, PainPointProfile, PaymentProfile, StartupProfile
+from .weights import DriverWeight
 
 
 class CreateProfileRequest(BaseModel):
@@ -32,6 +33,6 @@ class DecideRecommendationRequest(BaseModel):
 
 
 class ProposeWeightConfigRequest(BaseModel):
-    sub_score_driver_tables: Optional[dict[str, list[tuple[str, float]]]] = None
+    sub_score_driver_tables: Optional[dict[str, list[DriverWeight]]] = None
     final_rollup_weights: Optional[dict[str, float]] = None
     change_reason: str

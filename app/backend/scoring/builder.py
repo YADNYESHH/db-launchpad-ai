@@ -23,7 +23,8 @@ def build_sub_score(sub_score_type: str, driver_fns: dict, ctx: ScoringContext) 
     missing_flags: list[str] = []
     total_weighted = 0.0
 
-    for driver_name, weight in driver_table:
+    for dw in driver_table:
+        driver_name, weight = dw.name, dw.weight
         fn = driver_fns.get(driver_name)
         if fn is None:
             raise KeyError(f"no driver function registered for '{driver_name}' in '{sub_score_type}'")

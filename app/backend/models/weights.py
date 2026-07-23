@@ -114,6 +114,16 @@ HIGH_PRIORITY_MIN_EARLY_SIGNAL = 65
 HIGH_PRIORITY_MIN_RM_ACTIONABILITY = 70
 
 
+class DriverWeight(BaseModel):
+    """A single (driver_name, weight) pair. Modeled as an object rather than
+    a tuple because Firestore does not support nested arrays (an array of
+    (name, weight) tuples serializes as an array-of-arrays, which Firestore
+    rejects with 'contains an invalid nested entity')."""
+
+    name: str
+    weight: float
+
+
 class WeightConfig(BaseModel):
     version_id: str
     owner: str
@@ -121,8 +131,11 @@ class WeightConfig(BaseModel):
     approved_date: Optional[datetime] = None
     active: bool = True
     change_reason: str = "Initial version transcribed from LaunchPad AI concept document."
-    sub_score_driver_tables: dict[str, list[tuple[str, float]]] = Field(
-        default_factory=lambda: {k: list(v) for k, v in SUB_SCORE_DRIVER_TABLES.items()}
+    sub_score_driver_tables: dict[str, list[DriverWeight]] = Field(
+        default_factory=lambda: {
+            k: [DriverWeight(name=name, weight=weight) for name, weight in v]
+            for k, v in SUB_SCORE_DRIVER_TABLES.items()
+        }
     )
     final_rollup_weights: dict[str, float] = Field(
         default_factory=lambda: dict(FINAL_ROLLUP_WEIGHTS)
