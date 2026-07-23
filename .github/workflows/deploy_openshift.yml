@@ -54,9 +54,9 @@ jobs:
         fi
         
         # Create three unique hello world files
-        echo "Hello World from toruk-makto! (File 1) - Generated at $$(date)" > hello1.txt
-        echo "Hello World from toruk-makto! (File 2) - Generated at $$(date)" > hello2.txt
-        echo "Hello World from toruk-makto! (File 3) - Generated at $$(date)" > hello3.txt
+        echo "Hello World from toruk-makto! (File 1) - Generated at $(date)" > hello1.txt
+        echo "Hello World from toruk-makto! (File 2) - Generated at $(date)" > hello2.txt
+        echo "Hello World from toruk-makto! (File 3) - Generated at $(date)" > hello3.txt
         
         # Upload files to bucket
         gcloud storage cp hello1.txt hello2.txt hello3.txt "gs://${BUCKET_NAME}/"
@@ -66,7 +66,7 @@ jobs:
         gcloud storage ls "gs://${BUCKET_NAME}/"
         
         # Export bucket name for later use
-        echo "BUCKET_NAME=${BUCKET_NAME}" >> $$GITHUB_ENV
+        echo "BUCKET_NAME=${BUCKET_NAME}" >> $GITHUB_ENV
     
     - name: Install OpenShift CLI
       run: |
