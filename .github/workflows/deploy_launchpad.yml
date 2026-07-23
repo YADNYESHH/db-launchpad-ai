@@ -1,0 +1,172 @@
+name: Deploy LaunchPad AI to Cloud Run
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "app/**"
+      - ".github/workflows/deploy_launchpad.yml"
+  workflow_dispatch:
+
+env:
+  PROJECT_ID: ${{ vars.PROJECT_ID }}
+  REGION: europe-west1
+  SERVICE_NAME: launchpad-ai
+  REPOSITORY: launchpad-ai
+  WORKLOAD_SA_EMAIL: ${{ vars.WORKLOAD_SA_EMAIL }}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install backend dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run backend test suite (deterministic scoring, validation, API, RBAC)
+        run: STORE_BACKEND=memory python -m pytest backend/tests -v
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: app/frontend/package-lock.json
+
+      - name: Build frontend (typecheck + bundle)
+        working-directory: app/frontend
+        run: |
+          npm ci
+          npm run build
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: "read"
+      id-token: "write"
+    outputs:
+      url: ${{ steps.deploy.outputs.url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # This project's Cloud Build default service account is de-privileged
+      # (see GCP_SERVICE_ACCOUNTS.md), so — following the pattern already
+      # validated in .github/workflows/example_docker_push_to_artifact_registry.yml
+      # — we build and push the image directly on the runner instead of using
+      # `gcloud run deploy --source` (which would depend on Cloud Build's identity).
+      - name: Authenticate to GCP as Infrastructure SA (deploy + registry admin)
+        uses: google-github-actions/auth@v2
+        with:
+          project_id: ${{ vars.PROJECT_ID }}
+          workload_identity_provider: ${{ vars.WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.INFRA_SA_EMAIL }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Ensure Artifact Registry repository exists
+        run: |
+          if ! gcloud artifacts repositories describe "${REPOSITORY}" --location="${REGION}" --project="${PROJECT_ID}" >/dev/null 2>&1; then
+            gcloud artifacts repositories create "${REPOSITORY}" --location="${REGION}" --repository-format=docker --project="${PROJECT_ID}"
+          fi
+
+      - name: Ensure Firestore database exists
+        run: |
+          if ! gcloud firestore databases describe --project="${PROJECT_ID}" >/dev/null 2>&1; then
+            gcloud firestore databases create --project="${PROJECT_ID}" --location=eur3 --type=firestore-native
+          fi
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker "${REGION}-docker.pkg.dev"
+
+      - name: Build image
+        run: |
+          docker build \
+            -t "${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY}/${SERVICE_NAME}:${{ github.sha }}" \
+            -t "${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY}/${SERVICE_NAME}:latest" \
+            app
+
+      - name: Push image
+        run: |
+          docker push "${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY}/${SERVICE_NAME}:${{ github.sha }}"
+          docker push "${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY}/${SERVICE_NAME}:latest"
+
+      - name: Deploy to Cloud Run
+        id: deploy
+        run: |
+          set -e
+          JWT_SECRET_KEY=$(openssl rand -hex 32)
+          gcloud run deploy "${SERVICE_NAME}" \
+            --image "${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY}/${SERVICE_NAME}:${{ github.sha }}" \
+            --region "${REGION}" \
+            --project "${PROJECT_ID}" \
+            --service-account "${WORKLOAD_SA_EMAIL}" \
+            --allow-unauthenticated \
+            --set-env-vars "STORE_BACKEND=firestore,PROJECT_ID=${PROJECT_ID},VERTEX_LOCATION=${REGION},JWT_SECRET_KEY=${JWT_SECRET_KEY}"
+
+          url=$(gcloud run services describe "${SERVICE_NAME}" --region "${REGION}" --project "${PROJECT_ID}" --format="value(status.url)")
+          echo "url=${url}" >> "${GITHUB_OUTPUT}"
+
+  smoke-test:
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Health check
+        run: |
+          url="${{ needs.deploy.outputs.url }}"
+          for i in 1 2 3 4 5; do
+            if curl -sf "${url}/healthz"; then break; fi
+            echo "retry $i..."; sleep 5
+          done
+          curl -sf "${url}/healthz" | tee /dev/stderr | grep -q '"status":"healthy"'
+
+      - name: End-to-end smoke test (login -> score -> recommend -> approve -> audit)
+        run: |
+          set -e
+          url="${{ needs.deploy.outputs.url }}"
+          token=$(curl -s -X POST "${url}/auth/login" \
+            -d "username=anna.schmidt@launchpad.demo&password=demo1234" | \
+            python3 -c "import json,sys;print(json.load(sys.stdin)['access_token'])")
+
+          score=$(curl -s -X POST "${url}/profiles/ST-001/score" -H "Authorization: Bearer ${token}")
+          echo "${score}" | python3 -c "
+          import json, sys
+          d = json.load(sys.stdin)['score_record']
+          assert d['priority_band'] == 'high_priority', f'expected high_priority, got {d[\"priority_band\"]}'
+          assert d['missing_data_flags'] == [], f'unexpected missing data: {d[\"missing_data_flags\"]}'
+          print('score OK:', d['final_score'], d['priority_band'])
+          "
+
+          rec=$(curl -s -X POST "${url}/recommendations/generate" -H "Authorization: Bearer ${token}" \
+            -H "Content-Type: application/json" -d '{"startup_id":"ST-001","force":false}')
+          rec_id=$(echo "${rec}" | python3 -c "
+          import json, sys
+          d = json.load(sys.stdin)
+          assert d['guardrail_flags'] == [], f'guardrail flags present: {d[\"guardrail_flags\"]}'
+          print(d['recommendation_id'])
+          ")
+
+          curl -s -X POST "${url}/recommendations/${rec_id}/approve" -H "Authorization: Bearer ${token}" \
+            -H "Content-Type: application/json" -d '{"decision":"approved"}' | \
+            python3 -c "
+          import json, sys
+          d = json.load(sys.stdin)
+          assert d['approval_status'] == 'approved'
+          print('approval OK')
+          "
+
+          curl -s "${url}/audit/ST-001" -H "Authorization: Bearer ${token}" | python3 -c "
+          import json, sys
+          events = [e['event_type'] for e in json.load(sys.stdin)]
+          for required in ('score_calculated', 'recommendation_generated', 'recommendation_approved'):
+              assert required in events, f'missing audit event: {required}'
+          print('audit trail OK:', events)
+          "
