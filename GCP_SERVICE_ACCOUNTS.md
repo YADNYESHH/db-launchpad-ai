@@ -108,3 +108,66 @@ $'{
     "templateUri": "https://us-kfp.pkg.dev/ml-pipeline/large-language-model-pipelines/tune-large-model/v2.0.0"
 }'
 ```
+
+### Gemini Models (Enterprise Agent Platform)
+
+Gemini runs on the Enterprise Agent Platform, the service formerly called Vertex AI. The `aiplatform.googleapis.com` API is enabled on your project and your Workload SA (`workload@hack-team-toruk-makto.iam.gserviceaccount.com`) has `roles/aiplatform.user`, which is enough to send prompts to Gemini. Because you cannot create service account keys, authenticate through Application Default Credentials (ADC) in both cases below.
+
+**From your local desktop (gcloud ADC)**
+
+Sign in once so the client libraries can find your user credentials:
+
+```shell
+gcloud auth application-default login
+gcloud auth application-default set-quota-project hack-team-toruk-makto
+```
+
+**From a compute workload (Workload SA + client library)**
+
+Attach your Workload SA to the resource that runs your code (see the Cloud Run, Cloud Functions, Dataflow and other sections above). At runtime the Google client libraries read the SA's credentials from the metadata server through ADC. You never copy a secret into the container or VM.
+
+**Calling Gemini (Python, `google-genai`)**
+
+The Google Gen AI SDK is the current client library and runs with the same code locally and on compute:
+
+```shell
+pip install google-genai
+```
+
+```python
+from google import genai
+
+# vertexai=True routes the SDK to the Enterprise Agent Platform (Vertex),
+# so it uses your ADC credentials and your project's quota.
+client = genai.Client(
+    vertexai=True,
+    project="hack-team-toruk-makto",
+    location="global",  # or a region, e.g. europe-west1
+)
+
+response = client.models.generate_content(
+    model="gemini-2.5-flash",
+    contents="Summarise the text below in two bullet points.",
+)
+print(response.text)
+```
+
+You can supply the same settings through environment variables instead of arguments, which suits containers:
+
+```shell
+export GOOGLE_GENAI_USE_VERTEXAI=true
+export GOOGLE_CLOUD_PROJECT="hack-team-toruk-makto"
+export GOOGLE_CLOUD_LOCATION="global"
+```
+
+```python
+from google import genai
+
+client = genai.Client()  # reads the variables above
+```
+
+Notes:
+
+* `location` can be `global` (broadest model availability) or a specific region such as `europe-west1`, the default region for your environment. Choose a region if you have data-locality requirements.
+* Model IDs change over time. If `gemini-2.5-flash` is unavailable, list the current models in the [Model Garden](https://console.cloud.google.com/vertex-ai/model-garden) or the [Gemini model docs](https://cloud.google.com/vertex-ai/generative-ai/docs/models).
+* For raw HTTP, the `curl` pattern from the tuning example above works against any Enterprise Agent Platform endpoint: `Authorization: Bearer $(gcloud auth print-access-token)`.
