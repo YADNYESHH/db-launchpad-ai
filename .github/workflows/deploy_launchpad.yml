@@ -122,9 +122,12 @@ jobs:
       - name: Health check
         run: |
           url="${{ needs.deploy.outputs.url }}"
-          for i in 1 2 3 4 5; do
+          # A brand-new revision's container is ready almost immediately, but
+          # routing for a fresh *.run.app hostname can take longer to
+          # propagate across Google's edge than a short retry window allows.
+          for i in $(seq 1 20); do
             if curl -sf "${url}/healthz"; then break; fi
-            echo "retry $i..."; sleep 5
+            echo "retry $i..."; sleep 10
           done
           curl -sf "${url}/healthz" | tee /dev/stderr | grep -q '"status":"healthy"'
 

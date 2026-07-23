@@ -67,16 +67,15 @@ class FirestoreStore(Store):
         return ScoreRecord.model_validate(doc.to_dict()) if doc.exists else None
 
     def get_latest_score_record(self, startup_id: str) -> Optional[tuple[str, ScoreRecord]]:
-        query = (
-            self._db.collection("score_records")
-            .where("startup_id", "==", startup_id)
-            .order_by("created_at", direction=firestore.Query.DESCENDING)
-            .limit(1)
-        )
-        docs = list(query.stream())
+        # Sorted in Python rather than via Firestore order_by: a where() +
+        # order_by() on different fields needs a composite index to be
+        # created ahead of time (a manual provisioning step we want to avoid
+        # for a hackathon-scale audit/score volume).
+        query = self._db.collection("score_records").where("startup_id", "==", startup_id)
+        docs = [(d.id, ScoreRecord.model_validate(d.to_dict())) for d in query.stream()]
         if not docs:
             return None
-        return docs[0].id, ScoreRecord.model_validate(docs[0].to_dict())
+        return max(docs, key=lambda pair: pair[1].created_at)
 
     def save_recommendation(self, rec: RecommendationRecord) -> None:
         self._db.collection("recommendations").document(rec.recommendation_id).set(rec.model_dump(mode="json"))
@@ -89,12 +88,10 @@ class FirestoreStore(Store):
         self._db.collection("audit_log").document(event.audit_id).set(event.model_dump(mode="json"))
 
     def get_audit_trail(self, startup_id: str) -> list[AuditEvent]:
-        query = (
-            self._db.collection("audit_log")
-            .where("startup_id", "==", startup_id)
-            .order_by("timestamp", direction=firestore.Query.ASCENDING)
-        )
-        return [AuditEvent.model_validate(d.to_dict()) for d in query.stream()]
+        # Sorted in Python for the same reason as get_latest_score_record above.
+        query = self._db.collection("audit_log").where("startup_id", "==", startup_id)
+        events = [AuditEvent.model_validate(d.to_dict()) for d in query.stream()]
+        return sorted(events, key=lambda e: e.timestamp)
 
     def save_weight_config(self, config: WeightConfig) -> None:
         self._db.collection("weight_configs").document(config.version_id).set(config.model_dump(mode="json"))
