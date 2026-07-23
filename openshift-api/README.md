@@ -51,17 +51,17 @@ If you need to deploy manually:
 
 ### Health Check
 ```bash
-curl https://hackathon-api-toruk-makto.apps.hackathon.francecentral.aroapp.io/
+curl https://hackathon-api-toruk-makto.apps.dbhackathon.swedencentral.aroapp.io/
 ```
 
 ### Get a File
 ```bash
-curl https://hackathon-api-toruk-makto.apps.hackathon.francecentral.aroapp.io/file/TestFile.txt
+curl https://hackathon-api-toruk-makto.apps.dbhackathon.swedencentral.aroapp.io/file/TestFile.txt
 ```
 
 ### List Files
 ```bash
-curl https://hackathon-api-toruk-makto.apps.hackathon.francecentral.aroapp.io/files
+curl https://hackathon-api-toruk-makto.apps.dbhackathon.swedencentral.aroapp.io/files
 ```
 
 ## Troubleshooting
