@@ -1,3 +1,23 @@
+variable "app_engine_default_sa_email" {
+  description = "The email address of the default App Engine service account."
+  type = string
+}
+
+variable "app_engine_default_sa_id" {
+  description = "The fully qualified name of the default App Engine service account."
+  type = string
+}
+
+variable "compute_default_sa_email" {
+  description = "The email address of the default Compute Engine service account."
+  type = string
+}
+
+variable "compute_default_sa_id" {
+  description = "The fully qualified name of the default Compute Engine service account."
+  type = string
+}
+
 variable "infra_sa_email" {
   description = "The email address representation of the SA you can use to deploy infrastructure. It has the same access rights as human team members."
   type = string
