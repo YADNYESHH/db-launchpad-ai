@@ -115,6 +115,7 @@ The following APIs have been activated on your project. You cannot activate othe
 * secretmanager.googleapis.com
 * servicemanagement.googleapis.com
 * serviceusage.googleapis.com
+* spanner.googleapis.com
 * speech.googleapis.com
 * sql-component.googleapis.com
 * sqladmin.googleapis.com
