@@ -67,8 +67,11 @@ app.add_middleware(
 )
 
 
-@app.get("/healthz")
-def healthz():
+@app.get("/api/health")
+def health():
+    # Not served at /healthz: that exact path was observed to be intercepted
+    # ahead of this app (a Google-branded 404, not ours) on this project's
+    # Cloud Run *.run.app domain, while every other path routes correctly.
     return {"status": "healthy", "service": "launchpad-ai", "synthetic_only": True}
 
 

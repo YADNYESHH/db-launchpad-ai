@@ -11,7 +11,7 @@ export default defineConfig({
       '/recommendations': 'http://localhost:8080',
       '/audit': 'http://localhost:8080',
       '/weights': 'http://localhost:8080',
-      '/healthz': 'http://localhost:8080',
+      '/api': 'http://localhost:8080',
     },
   },
 })
