@@ -62,7 +62,7 @@ al.azure.com). Use your SSO ID and the **initial password** given in your briefi
 *   **Google Cloud Platform:** Login via the [GCP SSO link](https://www.google.com/a/db-hackathon.com/ServiceLogin?continue=https://console.cloud.google.com).
 *   **GitHub:** You must accept the invitation sent to your personal email. Attempt to [login to GitHub via SSO](https://github.com/orgs/db-hackathon/sso) first, then link your personal GitHub account.
 *   **Terraform Cloud:** [Login via SSO](https://app.terraform.io/sso/sign-in) and use `db-hackathon-2026` for the *Organization Name*.
-*   **RedHat OpenShift:** Visit the [OpenShift Console](https://console-openshift-console.apps.hackathon.francecentral.aroapp.io/k8s/cluster/projects/toruk-makto-official) and select **AAD** to log in.
+*   **RedHat OpenShift:** Visit the [OpenShift Console](https://console-openshift-console.apps.dbhackathon.swedencentral.aroapp.io/k8s/cluster/projects/toruk-makto-official) and select **AAD** to log in.
 *   **Microsoft Teams:** Access via the [browser](https://teams.microsoft.com/v2/) or the [desktop app](https://www.microsoft.com/en-gb/microsoft-teams/download-app).
 
 </details>
@@ -271,7 +271,7 @@ The default service accounts are de-privileged. You **must** attach your Workloa
 * vars.INFRA_SA_ID - The fully qualified ID representation of the SA you can use to deploy infrastructure.: projects/hack-team-toruk-makto/serviceAccounts/infrastructure@hack-team-toruk-makto.iam.gserviceaccount.com
 * vars.OPENSHIFT_NAMESPACE - The OpenShift namespace for your team: toruk-makto-official
 * vars.OPENSHIFT_REGISTRY - The OpenShift internal registry URL: image-registry.openshift-image-registry.svc:5000
-* vars.OPENSHIFT_SERVER - The OpenShift cluster API endpoint URL: https://api.hackathon.francecentral.aroapp.io:6443
+* vars.OPENSHIFT_SERVER - The OpenShift cluster API endpoint URL: https://api.dbhackathon.swedencentral.aroapp.io:6443
 * vars.PROJECT_ID - Your team's GCP Project ID.: hack-team-toruk-makto
 * vars.PROJECT_NUMBER - Your teams' GCP Project Number.: 156042242219
 * vars.WORKLOAD_IDENTITY_PROVIDER - The ID of the Workload Identity provider you cah use to authenticate from GitHub Actions to your GCP project.: projects/662541806905/locations/global/workloadIdentityPools/github-2026/providers/github-2026
@@ -292,7 +292,7 @@ A set of useful input variables has been populated for you:
 * infra_sa_id - The fully qualified ID representation of the SA you can use to deploy infrastructure.: projects/hack-team-toruk-makto/serviceAccounts/infrastructure@hack-team-toruk-makto.iam.gserviceaccount.com
 * openshift_namespace - The OpenShift namespace for your team: toruk-makto-official
 * openshift_registry - The OpenShift internal registry URL: image-registry.openshift-image-registry.svc:5000
-* openshift_server - The OpenShift cluster API endpoint URL: https://api.hackathon.francecentral.aroapp.io:6443
+* openshift_server - The OpenShift cluster API endpoint URL: https://api.dbhackathon.swedencentral.aroapp.io:6443
 * project_id - Your team's GCP Project ID.: hack-team-toruk-makto
 * project_number - Your teams' GCP Project Number.: 156042242219
 * workload_identity_provider - The ID of the Workload Identity provider you cah use to authenticate from GitHub Actions to your GCP project.: projects/662541806905/locations/global/workloadIdentityPools/github-2026/providers/github-2026
