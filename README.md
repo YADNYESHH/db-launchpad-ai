@@ -267,6 +267,10 @@ The default service accounts are de-privileged. You **must** attach your Workloa
 
 **Access:** All team members have **maintainer** access to this repository.
 **GitHub Actions Variables:** A set of useful variables has been populated for you:
+* vars.APP_ENGINE_DEFAULT_SA_EMAIL - The email address of the default App Engine service account.: hack-team-toruk-makto@appspot.gserviceaccount.com
+* vars.APP_ENGINE_DEFAULT_SA_ID - The fully qualified name of the default App Engine service account.: projects/hack-team-toruk-makto/serviceAccounts/hack-team-toruk-makto@appspot.gserviceaccount.com
+* vars.COMPUTE_DEFAULT_SA_EMAIL - The email address of the default Compute Engine service account.: 156042242219-compute@developer.gserviceaccount.com
+* vars.COMPUTE_DEFAULT_SA_ID - The fully qualified name of the default Compute Engine service account.: projects/hack-team-toruk-makto/serviceAccounts/156042242219-compute@developer.gserviceaccount.com
 * vars.INFRA_SA_EMAIL - The email address representation of the SA you can use to deploy infrastructure. It has the same access rights as human team members.: infrastructure@hack-team-toruk-makto.iam.gserviceaccount.com
 * vars.INFRA_SA_ID - The fully qualified ID representation of the SA you can use to deploy infrastructure.: projects/hack-team-toruk-makto/serviceAccounts/infrastructure@hack-team-toruk-makto.iam.gserviceaccount.com
 * vars.OPENSHIFT_NAMESPACE - The OpenShift namespace for your team: toruk-makto-official
@@ -288,6 +292,10 @@ Your workspace is VCS-driven. Pushing to the `/terraform` directory will trigger
 The Google provider is pre-configured to use your infrastructure SA.
 A set of useful input variables has been populated for you:
 
+* app_engine_default_sa_email - The email address of the default App Engine service account.: hack-team-toruk-makto@appspot.gserviceaccount.com
+* app_engine_default_sa_id - The fully qualified name of the default App Engine service account.: projects/hack-team-toruk-makto/serviceAccounts/hack-team-toruk-makto@appspot.gserviceaccount.com
+* compute_default_sa_email - The email address of the default Compute Engine service account.: 156042242219-compute@developer.gserviceaccount.com
+* compute_default_sa_id - The fully qualified name of the default Compute Engine service account.: projects/hack-team-toruk-makto/serviceAccounts/156042242219-compute@developer.gserviceaccount.com
 * infra_sa_email - The email address representation of the SA you can use to deploy infrastructure. It has the same access rights as human team members.: infrastructure@hack-team-toruk-makto.iam.gserviceaccount.com
 * infra_sa_id - The fully qualified ID representation of the SA you can use to deploy infrastructure.: projects/hack-team-toruk-makto/serviceAccounts/infrastructure@hack-team-toruk-makto.iam.gserviceaccount.com
 * openshift_namespace - The OpenShift namespace for your team: toruk-makto-official
@@ -315,7 +323,7 @@ A set of useful input variables has been populated for you:
 #### Code & Setup Tutorials
 
 * **DB:**
-    * [Participant Briefing Deck](https://storage.cloud.google.com/hackathon_shared_storage_2026/Hackathon_Participant_Briefing26.pdf)
+    * [Participant Briefing Deck](https://storage.cloud.google.com/hackathon_shared_storage_2026/Hackathon_Participant_Briefing26.pdf?authuser=1)
 *   **Google Cloud:**
     *   [Generative AI Training Resources](https://cloud.google.com/blog/topics/training-certifications/new-google-cloud-generative-ai-training-resources)
     *   [Example GCP Apps](https://github.com/db-hackathon/support/tree/main/google-examples)
