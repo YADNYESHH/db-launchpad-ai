@@ -218,10 +218,17 @@ def _grounding_locations() -> list[str]:
 # Hard per-attempt cap: a single (model, region) combination gets this long to
 # either succeed or fail before we move on. Without this, a hanging or slow
 # combination could block the entire request indefinitely - this was confirmed
-# live (a diagnostics call did not return within 60 seconds). Worst case with
-# the trimmed matrix above is now bounded at roughly
-# len(models) * len(locations) * ATTEMPT_TIMEOUT_SECONDS.
-ATTEMPT_TIMEOUT_SECONDS = 12
+# live (a diagnostics call did not return within 60 seconds). That first fix
+# used 12s, sized to skip dead (404ing) combos quickly. Once those dead combos
+# were removed from the candidate matrix (see _candidate_models/_grounding_
+# locations above), 12s turned out to be too tight for the *opposite* case: a
+# real grounded search+synthesis call that is genuinely working, confirmed
+# live via a 504 DEADLINE_EXCEEDED from Google's own server (not our client
+# timeout) on the second attempt - i.e. the call needed more than 12s to
+# finish, not less. Raised to 25s so a real call has room to complete; worst
+# case with the trimmed matrix is now bounded at roughly
+# len(models) * len(locations) * ATTEMPT_TIMEOUT_SECONDS = 2 * 1 * 25 = 50s.
+ATTEMPT_TIMEOUT_SECONDS = 25
 
 
 class _GroundedModel:
