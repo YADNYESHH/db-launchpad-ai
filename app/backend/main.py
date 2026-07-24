@@ -311,11 +311,14 @@ def seed_portfolio_endpoint(
     store = get_store()
     body = body or {}
     sectors = body.get("sectors")
-    per_sector = body.get("per_sector", 3)
+    if isinstance(sectors, list):
+        sectors = sectors[:2]  # hard cap: each sector is one grounded call, keep requests fast
+    per_sector = body.get("per_sector", 2)
     try:
         per_sector = int(per_sector)
     except (TypeError, ValueError):
-        per_sector = 3
+        per_sector = 2
+    per_sector = max(1, min(per_sector, 3))
     result = seed_live_portfolio(store, actor=current.user_id, sectors=sectors, per_sector=per_sector)
     return {**result, "total_profiles": len(store.list_profiles())}
 

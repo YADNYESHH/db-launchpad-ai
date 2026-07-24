@@ -181,12 +181,14 @@ _WORKING_COMBO: tuple[str, str] | None = None
 
 def _candidate_models() -> list[str]:
     """Model IDs to try, in order, de-duplicated. The hackathon platform serves
-    ``gemini-2.5-flash`` (see GCP_SERVICE_ACCOUNTS.md). ``gemini-2.0-flash`` is
-    deliberately NOT in this list: it 404s on this project and every attempt
-    against it was pure wasted latency on the request path (this was a real
-    contributor to live discovery appearing to hang - see ATTEMPT_TIMEOUT_SECONDS
-    below for the other half of that fix)."""
-    ordered = [_MODEL_NAME, "gemini-2.5-flash", "gemini-2.5-pro", "gemini-flash-latest"]
+    ``gemini-2.5-flash`` (see GCP_SERVICE_ACCOUNTS.md, confirmed live). Both
+    ``gemini-2.0-flash`` and ``gemini-flash-latest`` are deliberately NOT in
+    this list: both were confirmed live (via /discovery/diagnostics) to 404 as
+    "Publisher model ... was not found" on this project, so every attempt
+    against them was pure wasted latency (a real contributor to live discovery
+    appearing to hang - see ATTEMPT_TIMEOUT_SECONDS below for the other half
+    of that fix)."""
+    ordered = [_MODEL_NAME, "gemini-2.5-flash", "gemini-2.5-pro"]
     seen: list[str] = []
     for m in ordered:
         if m and m not in seen:
@@ -197,13 +199,15 @@ def _candidate_models() -> list[str]:
 def _grounding_locations() -> list[str]:
     """Locations to try for grounded generation, in order, de-duplicated.
 
-    ``global`` has the broadest model availability (per the platform docs) so we
-    try it first, then the configured region. Trimmed from 4 candidates to 2:
-    the previous list (global, configured region, us-central1, europe-west4)
-    combined with 4 candidate models meant up to 20 serial network round-trips
-    with no per-attempt timeout on a single request - see the fix below.
+    ``global`` is the only location this project's README/GCP_SERVICE_ACCOUNTS.md
+    documents as the guaranteed-working example, and is the sole entry now.
+    Previously also tried the configured region (``europe-west1``) as a second
+    candidate, but every combination that reached that region 404'd the same
+    way as the retired models above - it was pure wasted latency on the
+    request path, not a real fallback. Trimming to one location roughly halves
+    worst-case latency for a single grounded call (see ATTEMPT_TIMEOUT_SECONDS).
     """
-    ordered = ["global", _LOCATION]
+    ordered = ["global"]
     seen: list[str] = []
     for loc in ordered:
         if loc and loc not in seen:

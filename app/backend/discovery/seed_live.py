@@ -16,13 +16,13 @@ from ..store import Store
 
 logger = logging.getLogger(__name__)
 
-# A small, cross-border-payments-relevant default sector list. Each grounded
-# sector discovery takes ~60-70s, so the default is kept to 2 sectors to stay
-# well under Cloud Run's request timeout. Callers may pass more sectors
-# explicitly (best run as several smaller requests).
+# A small, cross-border-payments-relevant default sector list. Kept to a
+# single sector by default so one "populate" click reliably completes well
+# under Cloud Run's request timeout even if grounded calls need retries.
+# Callers may pass more sectors explicitly (best run as several smaller
+# requests, not one large one).
 DEFAULT_SECTORS: list[str] = [
     "cross-border B2B payments",
-    "SaaS fintech",
 ]
 
 
