@@ -12,8 +12,10 @@ from .auth.deps import get_current_user, require_roles
 from .auth.security import TokenPayload, create_access_token, verify_password
 from .discovery.agent import diagnose_discovery
 from .discovery.seed_live import seed_live_portfolio
+from .governance_metrics import compute_governance_metrics
 from .models import Role, UserPublic
 from .models.api import (
+    ChatQuestionRequest,
     CreateProfileRequest,
     DecideRecommendationRequest,
     DiscoveryRequest,
@@ -23,6 +25,7 @@ from .models.api import (
 )
 from .orchestrator import (
     NotFoundError,
+    answer_startup_question,
     decide_recommendation,
     ensure_weight_config,
     run_discovery,
@@ -274,6 +277,14 @@ def portfolio_summary(current: TokenPayload = Depends(get_current_user)):
     }
 
 
+@app.get("/governance/metrics")
+def governance_metrics(current: TokenPayload = Depends(get_current_user)):
+    """Read-only portfolio-wide governance, provenance, and business-value
+    roll-up for a Responsible-AI / Executive view. Computed purely from the
+    store; fully defensive (never raises)."""
+    return compute_governance_metrics(get_store())
+
+
 # ------------------------------------------------------------ discovery -----
 @app.post("/discovery/search")
 def discovery_search(
@@ -370,6 +381,38 @@ def get_recommendation_endpoint(recommendation_id: str, current: TokenPayload = 
     if rec is None:
         raise HTTPException(status_code=404, detail=f"No recommendation found for id={recommendation_id}")
     return rec
+
+
+# -------------------------------------------------------- rm chat (ask) ----
+@app.post("/startups/{startup_id}/chat")
+def ask_about_startup(
+    startup_id: str,
+    req: ChatQuestionRequest,
+    current: TokenPayload = Depends(require_roles(Role.RM, Role.PRODUCT_OWNER)),
+):
+    """RM (or Product Owner) asks a free-text question about one startup.
+    Answered from what the system already knows, with a best-effort live
+    lookup for anything not already on file; degrades gracefully and never
+    ships a guardrail-flagged answer. Every exchange auto-saves immediately."""
+    store = get_store()
+    question = req.question.strip()
+    if not question:
+        raise HTTPException(status_code=422, detail="question must not be empty")
+    try:
+        _rm_message, assistant_message = answer_startup_question(
+            store, startup_id, question, actor=current.user_id
+        )
+    except NotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    return assistant_message
+
+
+@app.get("/startups/{startup_id}/chat")
+def get_chat_history_endpoint(startup_id: str, current: TokenPayload = Depends(get_current_user)):
+    store = get_store()
+    if store.get_profile(startup_id) is None:
+        raise HTTPException(status_code=404, detail=f"No profile found for startup_id={startup_id}")
+    return store.get_chat_history(startup_id)
 
 
 # --------------------------------------------------------------- audit -----

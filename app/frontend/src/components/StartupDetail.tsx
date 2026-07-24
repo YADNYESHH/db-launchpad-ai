@@ -8,8 +8,9 @@ import SummaryStrip from './SummaryStrip'
 import DecathlonGrid from './DecathlonGrid'
 import PipelineValuePanel from './PipelineValuePanel'
 import AgentFlowPanel from './AgentFlowPanel'
+import ChatPanel from './ChatPanel'
 
-type Tab = 'overview' | 'twin' | 'scorecard' | 'recommendation' | 'audit'
+type Tab = 'overview' | 'twin' | 'scorecard' | 'recommendation' | 'audit' | 'ask'
 
 export default function StartupDetail({ startupId, role }: { startupId: string; role: Role }) {
   const [bundle, setBundle] = useState<ProfileBundle | null>(null)
@@ -108,6 +109,9 @@ export default function StartupDetail({ startupId, role }: { startupId: string; 
         </button>
         <button className={tab === 'audit' ? 'active' : ''} onClick={() => setTab('audit')}>
           Audit trail ({audit.length})
+        </button>
+        <button className={tab === 'ask' ? 'active' : ''} onClick={() => setTab('ask')}>
+          Ask a question
         </button>
       </nav>
 
@@ -239,6 +243,8 @@ export default function StartupDetail({ startupId, role }: { startupId: string; 
       )}
 
       {tab === 'audit' && <AuditTrail events={audit} />}
+
+      {tab === 'ask' && <ChatPanel startupId={startupId} />}
     </div>
   )
 }

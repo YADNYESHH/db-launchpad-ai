@@ -90,11 +90,23 @@
   flex-wrap: wrap;
 }
 
+.lp-header-identity-col {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  align-items: flex-start;
+}
+
 .lp-header-identity {
   display: flex;
   align-items: center;
   gap: var(--lp-gap-sm);
   flex-wrap: wrap;
+}
+
+.lp-role-hint {
+  font-size: 0.72rem;
+  color: var(--lp-text-on-navy-muted);
 }
 
 .lp-user-name {

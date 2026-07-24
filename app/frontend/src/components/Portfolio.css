@@ -1,0 +1,105 @@
+/*
+ * Portfolio.css — LIVE vs SYNTHETIC data-source affordances.
+ * All classes are prefixed `pf-` and reuse `--lp-*` theme tokens.
+ */
+
+/* Data-source summary line: "N live · M synthetic" */
+.pf-source-summary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 4px 0 10px;
+  font-size: 0.8rem;
+  color: var(--lp-text-muted);
+}
+
+.pf-source-summary strong {
+  color: var(--lp-text);
+  font-weight: 700;
+}
+
+.pf-source-summary .pf-live-count {
+  color: var(--lp-green);
+}
+
+/* Data-source filter pill row */
+.pf-source-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 12px;
+}
+
+.pf-source-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--lp-text-muted);
+  background: var(--lp-surface-muted);
+  border: 1px solid var(--lp-border-strong);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+}
+
+.pf-source-chip:hover {
+  border-color: var(--lp-accent);
+}
+
+.pf-source-chip.active {
+  color: var(--lp-text-on-navy);
+  background: var(--lp-accent);
+  border-color: var(--lp-accent);
+}
+
+.pf-source-chip.pf-source-chip-live.active {
+  background: var(--lp-band-high);
+  border-color: var(--lp-band-high);
+}
+
+/* Small dot echoing the source colour inside the chip */
+.pf-source-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.85;
+}
+
+/* Badges shown next to each company name */
+.pf-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 7px;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  line-height: 1.5;
+  border-radius: 999px;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+
+.pf-badge-live {
+  color: var(--lp-green);
+  background: var(--lp-band-high-bg);
+  border: 1px solid var(--lp-band-high);
+}
+
+.pf-badge-live::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--lp-band-high);
+}
+
+.pf-badge-synthetic {
+  color: var(--lp-text-muted);
+  background: var(--lp-surface-muted);
+  border: 1px solid var(--lp-border-strong);
+}

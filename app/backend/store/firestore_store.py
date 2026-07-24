@@ -1,12 +1,13 @@
 """Firestore Store implementation used by the deployed Cloud Run service.
 Collections: profiles, payment_profiles, pain_point_profiles, signals,
-score_records, recommendations, audit_log, weight_configs, users.
+score_records, recommendations, audit_log, weight_configs, users, chat_messages.
 """
 
 from google.cloud import firestore
 
 from ..models import (
     AuditEvent,
+    ChatMessage,
     ExpansionSignal,
     PainPointProfile,
     PaymentProfile,
@@ -111,3 +112,13 @@ class FirestoreStore(Store):
 
     def save_user(self, user: User) -> None:
         self._db.collection("users").document(user.email).set(user.model_dump(mode="json"))
+
+    def append_chat_message(self, message: ChatMessage) -> None:
+        self._db.collection("chat_messages").document(message.message_id).set(message.model_dump(mode="json"))
+
+    def get_chat_history(self, startup_id: str) -> list[ChatMessage]:
+        # Equality filter + Python sort, same pattern as get_audit_trail above -
+        # avoids needing a composite index for a where() + order_by() query.
+        query = self._db.collection("chat_messages").where("startup_id", "==", startup_id)
+        messages = [ChatMessage.model_validate(d.to_dict()) for d in query.stream()]
+        return sorted(messages, key=lambda m: m.created_at)

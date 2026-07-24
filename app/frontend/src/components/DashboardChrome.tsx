@@ -14,6 +14,13 @@ function humanizeRole(role: Role): string {
   return ROLE_LABELS[role] ?? role
 }
 
+const ROLE_HINTS: Record<Role, string> = {
+  relationship_manager: 'You can ask, score, generate briefs, approve.',
+  product_owner: 'You can add startups, propose weights.',
+  control_reviewer: 'You can view and audit only.',
+  admin: 'You can do all of the above, plus activate weight changes.',
+}
+
 export function AppHeader(props: { user: UserPublic; onLogout: () => void }) {
   const { user, onLogout } = props
   return (
@@ -31,9 +38,12 @@ export function AppHeader(props: { user: UserPublic; onLogout: () => void }) {
         </span>
       </div>
       <div className="lp-header-user">
-        <div className="lp-header-identity">
-          <span className="lp-user-name">{user.name}</span>
-          <span className="lp-role-chip">{humanizeRole(user.role)}</span>
+        <div className="lp-header-identity-col">
+          <div className="lp-header-identity">
+            <span className="lp-user-name">{user.name}</span>
+            <span className="lp-role-chip">{humanizeRole(user.role)}</span>
+          </div>
+          <span className="lp-role-hint">{ROLE_HINTS[user.role] ?? ''}</span>
         </div>
         <button type="button" className="lp-signout-btn" onClick={onLogout}>
           Sign out

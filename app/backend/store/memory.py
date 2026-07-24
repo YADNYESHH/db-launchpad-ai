@@ -3,6 +3,7 @@ CI — anywhere Firestore credentials are not available or not wanted."""
 
 from ..models import (
     AuditEvent,
+    ChatMessage,
     ExpansionSignal,
     PainPointProfile,
     PaymentProfile,
@@ -27,6 +28,7 @@ class InMemoryStore(Store):
         self._audit: dict[str, list[AuditEvent]] = {}
         self._weight_configs: dict[str, WeightConfig] = {}
         self._users: dict[str, User] = {}
+        self._chat: dict[str, list[ChatMessage]] = {}
 
     def save_profile(self, profile: StartupProfile) -> None:
         self._profiles[profile.startup_id] = profile
@@ -98,3 +100,9 @@ class InMemoryStore(Store):
 
     def save_user(self, user: User) -> None:
         self._users[user.email] = user
+
+    def append_chat_message(self, message: ChatMessage) -> None:
+        self._chat.setdefault(message.startup_id, []).append(message)
+
+    def get_chat_history(self, startup_id: str) -> list[ChatMessage]:
+        return list(self._chat.get(startup_id, []))

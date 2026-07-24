@@ -173,6 +173,19 @@ export interface RecommendationRecord {
   validation_notes: string[]
 }
 
+export type ChatRole = 'rm' | 'assistant'
+
+export interface ChatMessage {
+  message_id: string
+  startup_id: string
+  role: ChatRole
+  text: string
+  citations: string[]
+  llm_used: boolean
+  guardrail_flags: string[]
+  created_at: string
+}
+
 export interface AuditEvent {
   audit_id: string
   startup_id: string
@@ -189,6 +202,19 @@ export interface WeightConfig {
   approved_date: string | null
   active: boolean
   change_reason: string
+}
+
+export interface GovernanceMetrics {
+  total_profiles: number
+  scored_profiles: number
+  provenance: { live_grounded: number; synthetic: number; public_manual: number }
+  band_counts: Record<string, number>
+  total_pipeline_value_eur: number
+  audit_event_count: number
+  live_citation_count: number
+  active_weight_version: string | null
+  recommendations_generated: number
+  human_approval_required: boolean
 }
 
 export const SUB_SCORE_LABELS: Record<string, string> = {

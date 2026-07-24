@@ -1,4 +1,5 @@
 from .audit import AuditEvent
+from .chat import ChatMessage
 from .enums import (
     SUB_SCORE_TYPES,
     ApprovalStatus,
@@ -19,6 +20,7 @@ __all__ = [
     "SUB_SCORE_TYPES",
     "ApprovalStatus",
     "AuditEvent",
+    "ChatMessage",
     "ConfidenceBand",
     "DataSourceType",
     "DriverScore",

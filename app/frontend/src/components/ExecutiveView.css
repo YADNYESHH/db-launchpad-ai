@@ -1,0 +1,295 @@
+/* ExecutiveView — CEO / Corporate-Bank leader portfolio view.
+   All classes prefixed `exec-`; uses --lp-* theme tokens only. */
+
+.exec-root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-gap-lg);
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: var(--lp-gap-lg) var(--lp-gap);
+}
+
+.exec-state {
+  padding: var(--lp-gap-lg);
+  text-align: center;
+  color: var(--lp-text-muted);
+  background: var(--lp-surface);
+  border: 1px solid var(--lp-border);
+  border-radius: var(--lp-radius);
+  box-shadow: var(--lp-shadow);
+}
+
+.exec-state-error {
+  color: var(--lp-red);
+  border-color: var(--lp-band-none);
+  background: var(--lp-band-none-bg);
+}
+
+/* 1. Hero band */
+.exec-hero {
+  background: var(--lp-brand-gradient);
+  border-radius: var(--lp-radius-lg);
+  box-shadow: var(--lp-shadow-navy);
+  color: var(--lp-text-on-navy);
+  overflow: hidden;
+}
+
+.exec-hero-inner {
+  padding: var(--lp-gap-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-gap-xs);
+}
+
+.exec-hero-eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--lp-text-on-navy-muted);
+}
+
+.exec-hero-value {
+  font-size: clamp(2.2rem, 5vw, 3.4rem);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+
+.exec-hero-caption {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--lp-text-on-navy-muted);
+}
+
+/* 2. KPI tiles */
+.exec-tiles {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--lp-gap);
+}
+
+.exec-tile {
+  background: var(--lp-surface);
+  border: 1px solid var(--lp-border);
+  border-top: 3px solid var(--lp-accent);
+  border-radius: var(--lp-radius);
+  box-shadow: var(--lp-shadow);
+  padding: var(--lp-gap);
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-gap-xs);
+}
+
+.exec-tile-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--lp-text-muted);
+}
+
+.exec-tile-value {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--lp-navy);
+  line-height: 1;
+}
+
+.exec-tile-sub {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--lp-text-muted);
+  margin-left: 4px;
+}
+
+.exec-tile-caption {
+  font-size: 0.74rem;
+  color: var(--lp-text-muted);
+}
+
+/* Panels */
+.exec-panel {
+  background: var(--lp-surface);
+  border: 1px solid var(--lp-border);
+  border-radius: var(--lp-radius);
+  box-shadow: var(--lp-shadow);
+  padding: var(--lp-gap-lg);
+}
+
+.exec-panel-title {
+  margin: 0 0 var(--lp-gap) 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--lp-navy);
+}
+
+/* 3. Decision-band bar */
+.exec-bandbar {
+  display: flex;
+  width: 100%;
+  height: 30px;
+  border-radius: var(--lp-radius-sm);
+  overflow: hidden;
+  background: var(--lp-surface-muted);
+}
+
+.exec-bandbar-seg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  min-width: 2px;
+  transition: width 0.3s ease;
+}
+
+.exec-bandlegend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lp-gap-lg);
+  margin-top: var(--lp-gap);
+}
+
+.exec-bandlegend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--lp-gap-xs);
+  font-size: 0.85rem;
+}
+
+.exec-bandlegend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.exec-bandlegend-label {
+  color: var(--lp-text);
+}
+
+.exec-bandlegend-count {
+  font-weight: 700;
+  color: var(--lp-navy);
+}
+
+/* 4. Top opportunities table */
+.exec-table-wrap {
+  overflow-x: auto;
+}
+
+.exec-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.exec-table thead th {
+  text-align: left;
+  padding: 10px 12px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--lp-text-muted);
+  border-bottom: 2px solid var(--lp-border);
+  white-space: nowrap;
+}
+
+.exec-table tbody td {
+  padding: 12px;
+  border-bottom: 1px solid var(--lp-border);
+  color: var(--lp-text);
+}
+
+.exec-num {
+  text-align: right;
+}
+
+.exec-row {
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.exec-row:hover,
+.exec-row:focus-visible {
+  background: var(--lp-surface-tint);
+  outline: none;
+}
+
+.exec-cell-name {
+  font-weight: 600;
+  color: var(--lp-navy);
+}
+
+.exec-cell-score {
+  font-weight: 700;
+  color: var(--lp-navy);
+}
+
+.exec-empty {
+  text-align: center;
+  color: var(--lp-text-muted);
+  padding: var(--lp-gap-lg);
+}
+
+/* Pills + chips */
+.exec-pill {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.exec-chip {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: var(--lp-radius-sm);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.exec-chip-live {
+  color: var(--lp-green);
+  background: var(--lp-band-high-bg);
+  border: 1px solid var(--lp-band-high);
+}
+
+.exec-chip-synthetic {
+  color: var(--lp-grey);
+  background: var(--lp-surface-muted);
+  border: 1px solid var(--lp-border-strong);
+}
+
+/* 5. Strategic message */
+.exec-strategic {
+  margin: 0;
+  text-align: center;
+  font-size: 1.05rem;
+  font-style: italic;
+  font-weight: 600;
+  color: var(--lp-navy);
+  padding: var(--lp-gap);
+}
+
+/* Responsive */
+@media (max-width: 860px) {
+  .exec-tiles {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 520px) {
+  .exec-tiles {
+    grid-template-columns: 1fr;
+  }
+  .exec-bandlegend {
+    gap: var(--lp-gap);
+  }
+}

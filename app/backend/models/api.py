@@ -52,3 +52,7 @@ class ProposeWeightConfigRequest(BaseModel):
     sub_score_driver_tables: dict[str, list[DriverWeight]] | None = None
     final_rollup_weights: dict[str, float] | None = None
     change_reason: str
+
+
+class ChatQuestionRequest(BaseModel):
+    question: str

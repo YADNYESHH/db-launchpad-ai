@@ -22,6 +22,14 @@ function sortConfigs(configs: WeightConfig[]): WeightConfig[] {
   })
 }
 
+type CapabilityKey = 'product_owner' | 'admin' | 'control_reviewer'
+
+const CAPABILITIES: { key: CapabilityKey; label: string; verb: string }[] = [
+  { key: 'product_owner', label: 'Product Owners', verb: 'propose' },
+  { key: 'admin', label: 'Admins', verb: 'activate' },
+  { key: 'control_reviewer', label: 'Control Reviewers', verb: 'review' },
+]
+
 export default function WeightsAdmin(props: { role: Role }) {
   const { role } = props
 
@@ -69,9 +77,11 @@ export default function WeightsAdmin(props: { role: Role }) {
       }
       setSubmitting(true)
       try {
-        await proposeWeights({ change_reason: reason })
+        const created = await proposeWeights({ change_reason: reason })
         setChangeReason('')
-        setSuccessMessage('Proposal submitted. A new draft config was created.')
+        setSuccessMessage(
+          `Proposal ${shortVersion(created.version_id)} submitted — a new draft awaits Admin activation.`,
+        )
         await load()
       } catch (err) {
         setFormError(errorMessage(err))
@@ -89,7 +99,7 @@ export default function WeightsAdmin(props: { role: Role }) {
       setActivatingId(versionId)
       try {
         await activateWeights(versionId)
-        setSuccessMessage(`Activated ${shortVersion(versionId)}.`)
+        setSuccessMessage(`Version ${shortVersion(versionId)} is now the ACTIVE scoring model.`)
         await load()
       } catch (err) {
         setError(errorMessage(err))
@@ -105,34 +115,52 @@ export default function WeightsAdmin(props: { role: Role }) {
       <header className="wa-header">
         <h2 className="wa-title">Scoring weights governance</h2>
         <p className="wa-subtitle">
-          Version history for scoring weight configurations. Changes are controlled: proposals
-          by Product Owners, activation by Admins.
+          Every scoring-model change is proposed, activated, and audit-logged — no silent edits.
         </p>
       </header>
 
+      <div className="wa-caps" role="note" aria-label="Who can do what">
+        {CAPABILITIES.map((cap) => (
+          <span key={cap.key} className={`wa-cap${role === cap.key ? ' wa-cap-you' : ''}`}>
+            <strong>{cap.label}</strong> {cap.verb}
+            {role === cap.key && <span className="wa-cap-badge">you</span>}
+          </span>
+        ))}
+        <span className="wa-cap wa-cap-audit">
+          <span className="wa-cap-dot" aria-hidden="true" />
+          every change is audit-logged
+        </span>
+      </div>
+
       {successMessage && (
         <div className="wa-alert wa-alert-success" role="status">
-          {successMessage}
+          <span className="wa-alert-icon" aria-hidden="true">
+            ✓
+          </span>
+          <span>{successMessage}</span>
         </div>
       )}
       {error && (
         <div className="wa-alert wa-alert-error" role="alert">
-          {error}
+          <span className="wa-alert-icon" aria-hidden="true">
+            !
+          </span>
+          <span>{error}</span>
         </div>
       )}
 
       {loading ? (
         <div className="wa-state">Loading weight configurations…</div>
       ) : rows.length === 0 ? (
-        <div className="wa-state">No weight configurations found.</div>
+        <div className="wa-state">No weight configurations found yet.</div>
       ) : (
         <div className="wa-table-wrap">
           <table className="wa-table">
             <thead>
               <tr>
+                <th>Status</th>
                 <th>Version</th>
                 <th>Owner</th>
-                <th>Status</th>
                 <th>Created</th>
                 <th>Approved</th>
                 <th>Change reason</th>
@@ -143,21 +171,21 @@ export default function WeightsAdmin(props: { role: Role }) {
               {rows.map((cfg) => (
                 <tr key={cfg.version_id} className={cfg.active ? 'wa-row-active' : ''}>
                   <td>
+                    {cfg.active ? (
+                      <span className="wa-badge wa-badge-active">ACTIVE</span>
+                    ) : (
+                      <span className="wa-badge wa-badge-inactive">Inactive</span>
+                    )}
+                  </td>
+                  <td>
                     <code className="wa-version" title={cfg.version_id}>
                       {shortVersion(cfg.version_id)}
                     </code>
                   </td>
                   <td>{cfg.owner}</td>
-                  <td>
-                    {cfg.active ? (
-                      <span className="wa-badge wa-badge-active">Active</span>
-                    ) : (
-                      <span className="wa-badge wa-badge-inactive">Inactive</span>
-                    )}
-                  </td>
                   <td>{cfg.created_date}</td>
                   <td>
-                    {cfg.approved_date ?? <span className="wa-muted">pending</span>}
+                    {cfg.approved_date ?? <span className="wa-pending">pending</span>}
                   </td>
                   <td className="wa-reason">{cfg.change_reason}</td>
                   {canActivate && (
@@ -185,13 +213,13 @@ export default function WeightsAdmin(props: { role: Role }) {
 
       {canPropose && (
         <form className="wa-form" onSubmit={handlePropose}>
-          <h3 className="wa-form-title">Propose new weight config</h3>
+          <h3 className="wa-form-title">Propose new weight configuration</h3>
           <p className="wa-form-hint">
-            Submitting creates a new draft cloned from the current configuration. Weight tables
-            can be edited later.
+            Creates a new draft cloned from the current configuration. It stays inactive until an
+            Admin activates it — keeping the change reviewable and auditable.
           </p>
           <label className="wa-label" htmlFor="wa-change-reason">
-            Change reason
+            Change reason <span className="wa-required">*</span>
           </label>
           <textarea
             id="wa-change-reason"
@@ -205,7 +233,7 @@ export default function WeightsAdmin(props: { role: Role }) {
           {formError && <div className="wa-form-error">{formError}</div>}
           <div className="wa-form-actions">
             <button type="submit" className="wa-btn wa-btn-primary" disabled={submitting}>
-              {submitting ? 'Submitting…' : 'Propose new weight config'}
+              {submitting ? 'Submitting…' : 'Propose new configuration'}
             </button>
           </div>
         </form>
@@ -213,7 +241,8 @@ export default function WeightsAdmin(props: { role: Role }) {
 
       {!canPropose && !canActivate && (
         <p className="wa-note">
-          Weight changes are governed — proposals by Product Owners, activation by Admins.
+          This is a read-only view for your role. Weight changes are governed — Product Owners
+          propose, Admins activate, and every change is audit-logged.
         </p>
       )}
     </div>

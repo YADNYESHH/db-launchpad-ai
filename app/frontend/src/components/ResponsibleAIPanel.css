@@ -1,0 +1,301 @@
+/*
+ * ResponsibleAIPanel.css — judge-facing Responsible AI & Governance panel.
+ * All classes prefixed `rai-`. Uses shared --lp-* theme tokens.
+ */
+
+.rai-panel {
+  background: var(--lp-surface);
+  border: 1px solid var(--lp-border);
+  border-radius: var(--lp-radius-lg, var(--lp-radius));
+  box-shadow: var(--lp-shadow);
+  padding: var(--lp-gap-lg, 24px);
+  color: var(--lp-text);
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-gap-lg, 24px);
+}
+
+/* Header */
+.rai-header {
+  background: var(--lp-brand-gradient);
+  border-radius: var(--lp-radius);
+  padding: 20px 24px;
+  color: var(--lp-text-on-navy, #f8fafc);
+  box-shadow: var(--lp-shadow-navy, var(--lp-shadow));
+}
+
+.rai-title {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.rai-subtitle {
+  margin: 6px 0 0;
+  font-size: 0.9rem;
+  color: var(--lp-text-on-navy-muted, rgba(255, 255, 255, 0.82));
+  font-weight: 500;
+}
+
+/* Status / loading / error */
+.rai-status {
+  margin: 0;
+  color: var(--lp-text-muted);
+  font-size: 0.95rem;
+}
+
+.rai-status-error {
+  color: var(--lp-red);
+  font-weight: 600;
+}
+
+/* Generic section */
+.rai-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.rai-section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.rai-section-title {
+  margin: 0;
+  font-size: 1.02rem;
+  font-weight: 700;
+  color: var(--lp-text);
+}
+
+/* Provenance */
+.rai-citations {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--lp-green);
+  background: var(--lp-band-high-bg, rgba(30, 142, 62, 0.12));
+  border-radius: 999px;
+  padding: 4px 12px;
+}
+
+.rai-bar {
+  display: flex;
+  width: 100%;
+  height: 22px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--lp-surface-muted, #f4f6fb);
+  border: 1px solid var(--lp-border);
+}
+
+.rai-bar-seg {
+  display: block;
+  height: 100%;
+  min-width: 3px;
+  transition: flex-grow 0.3s ease;
+}
+
+.rai-bar-empty {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient(
+    45deg,
+    var(--lp-surface-muted, #f4f6fb),
+    var(--lp-surface-muted, #f4f6fb) 6px,
+    var(--lp-border) 6px,
+    var(--lp-border) 12px
+  );
+}
+
+.rai-seg-live {
+  background: var(--lp-green);
+}
+
+.rai-seg-synthetic {
+  background: var(--lp-grey, #6b7280);
+}
+
+.rai-seg-public {
+  background: var(--lp-blue, var(--lp-accent));
+}
+
+.rai-legend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+}
+
+.rai-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.86rem;
+  color: var(--lp-text-muted);
+}
+
+.rai-dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.rai-legend-label {
+  color: var(--lp-text);
+}
+
+.rai-legend-count {
+  font-weight: 700;
+  color: var(--lp-text);
+}
+
+.rai-provenance-note {
+  margin: 0;
+  font-size: 0.84rem;
+  color: var(--lp-text-muted);
+  font-style: italic;
+}
+
+/* Stat cards */
+.rai-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.rai-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px;
+  border-radius: var(--lp-radius);
+  border: 1px solid var(--lp-border);
+  background: var(--lp-surface-muted, #f4f6fb);
+}
+
+.rai-stat-accent {
+  border-color: var(--lp-accent);
+  background: var(--lp-accent-soft, rgba(26, 82, 214, 0.1));
+}
+
+.rai-stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--lp-navy);
+  line-height: 1.1;
+  word-break: break-word;
+}
+
+.rai-stat-accent .rai-stat-value {
+  color: var(--lp-accent);
+}
+
+.rai-stat-label {
+  font-size: 0.8rem;
+  color: var(--lp-text-muted);
+  font-weight: 500;
+}
+
+.rai-pipeline-note {
+  margin: 4px 0 0;
+  font-size: 0.86rem;
+  color: var(--lp-text-muted);
+}
+
+/* Controls checklist */
+.rai-controls {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 10px 20px;
+}
+
+.rai-control {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9rem;
+  color: var(--lp-text);
+}
+
+.rai-check {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--lp-band-high-bg, rgba(30, 142, 62, 0.12));
+  flex-shrink: 0;
+}
+
+.rai-check::after {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 3px;
+  width: 4px;
+  height: 8px;
+  border: solid var(--lp-green);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.rai-control-label {
+  line-height: 1.35;
+}
+
+/* Regulatory note */
+.rai-note {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 16px 20px;
+  border-radius: var(--lp-radius);
+  border: 1px solid var(--lp-border-strong, var(--lp-border));
+  background: var(--lp-surface-tint, var(--lp-surface-muted));
+}
+
+.rai-note-badge {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--lp-accent);
+  background: var(--lp-accent-soft, rgba(26, 82, 214, 0.1));
+  border-radius: 999px;
+  padding: 5px 12px;
+  white-space: nowrap;
+}
+
+.rai-note-text {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--lp-text);
+  font-weight: 500;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .rai-panel {
+    padding: var(--lp-gap, 16px);
+    gap: var(--lp-gap, 16px);
+  }
+
+  .rai-header {
+    padding: 16px 18px;
+  }
+
+  .rai-note {
+    align-items: flex-start;
+  }
+}

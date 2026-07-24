@@ -1,6 +1,8 @@
 import type {
   AuditEvent,
+  ChatMessage,
   DiscoveryResponse,
+  GovernanceMetrics,
   PortfolioSummary,
   ProfileBundle,
   RecommendationRecord,
@@ -94,6 +96,17 @@ export async function getAuditTrail(startupId: string): Promise<AuditEvent[]> {
   return request(`/audit/${startupId}`)
 }
 
+export async function askAboutStartup(startupId: string, question: string): Promise<ChatMessage> {
+  return request(`/startups/${startupId}/chat`, {
+    method: 'POST',
+    body: JSON.stringify({ question }),
+  })
+}
+
+export async function getChatHistory(startupId: string): Promise<ChatMessage[]> {
+  return request(`/startups/${startupId}/chat`)
+}
+
 export async function getActiveWeights(): Promise<WeightConfig> {
   return request('/weights')
 }
@@ -107,6 +120,10 @@ export async function discoverStartups(sector: string, limit = 4): Promise<Disco
 
 export async function getPortfolioSummary(): Promise<PortfolioSummary> {
   return request('/portfolio/summary')
+}
+
+export async function getGovernanceMetrics(): Promise<GovernanceMetrics> {
+  return request('/governance/metrics')
 }
 
 export interface SeedPortfolioResult {

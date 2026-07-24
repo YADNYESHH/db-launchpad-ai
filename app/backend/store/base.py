@@ -7,6 +7,7 @@ from abc import ABC, abstractmethod
 
 from ..models import (
     AuditEvent,
+    ChatMessage,
     ExpansionSignal,
     PainPointProfile,
     PaymentProfile,
@@ -87,3 +88,10 @@ class Store(ABC):
 
     @abstractmethod
     def save_user(self, user: User) -> None: ...
+
+    # -- chat (RM doubt-resolution) -------------------------------------------
+    @abstractmethod
+    def append_chat_message(self, message: ChatMessage) -> None: ...
+
+    @abstractmethod
+    def get_chat_history(self, startup_id: str) -> list[ChatMessage]: ...

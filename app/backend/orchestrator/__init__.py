@@ -1,3 +1,4 @@
+from .chat import answer_startup_question
 from .pipeline import (
     NotFoundError,
     decide_recommendation,
@@ -9,6 +10,7 @@ from .pipeline import (
 
 __all__ = [
     "NotFoundError",
+    "answer_startup_question",
     "decide_recommendation",
     "ensure_weight_config",
     "run_discovery",

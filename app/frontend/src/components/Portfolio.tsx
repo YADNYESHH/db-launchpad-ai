@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { listProfiles } from '../api'
 import type { PriorityBand, ProfileBundle } from '../types'
 import { PRIORITY_BAND_LABELS } from '../types'
+import './Portfolio.css'
 
 const BAND_CLASS: Record<PriorityBand, string> = {
   high_priority: 'high',
@@ -20,6 +21,16 @@ const FILTER_CHIPS: { key: PriorityBand | 'all'; label: string }[] = [
   { key: 'no_immediate_action', label: 'No action' },
 ]
 
+type SourceFilter = 'all' | 'live' | 'synthetic'
+
+const SOURCE_CHIPS: { key: SourceFilter; label: string }[] = [
+  { key: 'all', label: 'All sources' },
+  { key: 'live', label: 'Live' },
+  { key: 'synthetic', label: 'Synthetic' },
+]
+
+const isLive = (b: ProfileBundle) => b.profile.data_source_type === 'live_grounded'
+
 export default function Portfolio({
   onSelect,
   selectedId,
@@ -33,6 +44,7 @@ export default function Portfolio({
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [activeBand, setActiveBand] = useState<PriorityBand | 'all'>('all')
+  const [activeSource, setActiveSource] = useState<SourceFilter>('all')
 
   useEffect(() => {
     setLoading(true)
@@ -62,15 +74,25 @@ export default function Portfolio({
     return counts
   }, [bundles])
 
+  const sourceCounts = useMemo(() => {
+    let live = 0
+    for (const b of bundles) {
+      if (isLive(b)) live += 1
+    }
+    return { live, synthetic: bundles.length - live }
+  }, [bundles])
+
   const visible = useMemo(() => {
     const q = search.trim().toLowerCase()
     return ranked.filter((b) => {
       if (activeBand !== 'all' && b.score?.priority_band !== activeBand) return false
+      if (activeSource === 'live' && !isLive(b)) return false
+      if (activeSource === 'synthetic' && isLive(b)) return false
       if (!q) return true
       const haystack = `${b.profile.name} ${b.profile.sector} ${b.profile.hq_country}`.toLowerCase()
       return haystack.includes(q)
     })
-  }, [ranked, search, activeBand])
+  }, [ranked, search, activeBand, activeSource])
 
   if (loading) return <div className="panel">Loading portfolio…</div>
 
@@ -85,6 +107,32 @@ export default function Portfolio({
           </span>
         ))}
         <span className="portfolio-summary-total">{bundles.length} total</span>
+      </div>
+
+      <div className="pf-source-summary">
+        <span className="pf-live-count">
+          <strong>{sourceCounts.live}</strong> live
+        </span>
+        <span>&middot;</span>
+        <span>
+          <strong>{sourceCounts.synthetic}</strong> synthetic
+        </span>
+      </div>
+
+      <div className="pf-source-filters">
+        {SOURCE_CHIPS.map((chip) => (
+          <button
+            key={chip.key}
+            type="button"
+            className={`pf-source-chip${chip.key === 'live' ? ' pf-source-chip-live' : ''}${
+              activeSource === chip.key ? ' active' : ''
+            }`}
+            onClick={() => setActiveSource(chip.key)}
+          >
+            {chip.key !== 'all' && <span className="pf-source-dot" />}
+            {chip.label}
+          </button>
+        ))}
       </div>
 
       <input
@@ -125,7 +173,13 @@ export default function Portfolio({
               <div className="portfolio-item-header">
                 <span className="portfolio-item-title">
                   <strong>{b.profile.name}</strong>
-                  {b.profile.synthetic_flag && <span className="badge synthetic">SYNTHETIC</span>}
+                  {isLive(b) ? (
+                    <span className="pf-badge pf-badge-live">LIVE</span>
+                  ) : (
+                    b.profile.synthetic_flag && (
+                      <span className="pf-badge pf-badge-synthetic">SYNTHETIC</span>
+                    )
+                  )}
                 </span>
                 {score ? (
                   <span className={`score-badge ${BAND_CLASS[score.priority_band]}`}>
