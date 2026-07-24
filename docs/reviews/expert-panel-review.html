@@ -1,0 +1,710 @@
+<title>LaunchPad AI — Expert Panel Review</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --paper: #eef1ed;
+    --paper-raised: #ffffff;
+    --ink: #1b2420;
+    --ink-muted: #52605a;
+    --ink-faint: #7c8a83;
+    --accent: #2c5f5a;
+    --accent-soft: #e2ebe8;
+    --line: #d7ddd6;
+    --good: #2f7d4f;
+    --good-soft: #e3f1e7;
+    --warn: #a5710f;
+    --warn-soft: #f6ecd8;
+    --bad: #a8342a;
+    --bad-soft: #f5e2df;
+    --serif: Iowan Old Style, "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  }
+
+  :root[data-theme="dark"] {
+    --paper: #121614;
+    --paper-raised: #1a201d;
+    --ink: #e7ede9;
+    --ink-muted: #9fb0a8;
+    --ink-faint: #6c7a73;
+    --accent: #74bdb2;
+    --accent-soft: #1f2b28;
+    --line: #2a332e;
+    --good: #58b57e;
+    --good-soft: #1c2a20;
+    --warn: #d9a441;
+    --warn-soft: #2c2519;
+    --bad: #e0685d;
+    --bad-soft: #2e1c19;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #121614;
+      --paper-raised: #1a201d;
+      --ink: #e7ede9;
+      --ink-muted: #9fb0a8;
+      --ink-faint: #6c7a73;
+      --accent: #74bdb2;
+      --accent-soft: #1f2b28;
+      --line: #2a332e;
+      --good: #58b57e;
+      --good-soft: #1c2a20;
+      --warn: #d9a441;
+      --warn-soft: #2c2519;
+      --bad: #e0685d;
+      --bad-soft: #2e1c19;
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem 6rem;
+  }
+
+  header.masthead {
+    border-bottom: 3px solid var(--ink);
+    padding-bottom: 1.75rem;
+    margin-bottom: 2.25rem;
+  }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    color: var(--accent);
+    display: flex;
+    gap: 0.6rem;
+    align-items: center;
+  }
+  .eyebrow::before {
+    content: "";
+    width: 1.4rem;
+    height: 1px;
+    background: var(--accent);
+    display: inline-block;
+  }
+
+  h1.title {
+    font-family: var(--serif);
+    font-size: 2.35rem;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    margin: 0.6rem 0 0.5rem;
+    text-wrap: balance;
+  }
+
+  .subtitle {
+    font-size: 1.02rem;
+    color: var(--ink-muted);
+    max-width: 62ch;
+  }
+
+  .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.4rem;
+    margin-top: 1.1rem;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: var(--ink-faint);
+  }
+
+  /* --- reality-check banner --- */
+  .banner {
+    background: var(--warn-soft);
+    border: 1px solid color-mix(in srgb, var(--warn) 45%, var(--line));
+    border-left: 4px solid var(--warn);
+    border-radius: 3px;
+    padding: 1.15rem 1.3rem;
+    margin-bottom: 2.5rem;
+  }
+  .banner .banner-label {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    color: var(--warn);
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    display: block;
+  }
+  .banner p { margin: 0.5rem 0; font-size: 0.95rem; }
+  .banner p:first-of-type { margin-top: 0; }
+  .banner p:last-of-type { margin-bottom: 0; }
+
+  /* --- TOC --- */
+  nav.toc {
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 1.1rem 1.4rem;
+    margin-bottom: 3rem;
+  }
+  nav.toc .toc-label {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    color: var(--ink-faint);
+    margin-bottom: 0.6rem;
+    display: block;
+  }
+  nav.toc ol {
+    columns: 2;
+    column-gap: 2rem;
+    margin: 0;
+    padding-left: 1.2rem;
+    font-size: 0.88rem;
+  }
+  nav.toc li { margin-bottom: 0.35rem; break-inside: avoid; }
+  nav.toc a { color: var(--ink); text-decoration: none; border-bottom: 1px solid transparent; }
+  nav.toc a:hover { border-bottom-color: var(--accent); color: var(--accent); }
+
+  /* --- sections --- */
+  section.block {
+    margin-bottom: 2.75rem;
+    scroll-margin-top: 1.5rem;
+  }
+
+  .block-head {
+    display: flex;
+    align-items: baseline;
+    gap: 0.7rem;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 0.55rem;
+    margin-bottom: 1.1rem;
+  }
+  .block-num {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--accent);
+    font-weight: 600;
+  }
+  h2.block-title {
+    font-family: var(--serif);
+    font-size: 1.5rem;
+    font-weight: 500;
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  .lens {
+    font-size: 0.78rem;
+    color: var(--ink-faint);
+    font-family: var(--mono);
+    margin-bottom: 0.9rem;
+  }
+  .lens b { color: var(--ink-muted); font-weight: 600; }
+
+  p { margin: 0.7rem 0; }
+
+  .callout {
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 0.95rem 1.15rem;
+    margin: 0.9rem 0;
+  }
+  .callout.good { border-left: 3px solid var(--good); }
+  .callout.bad { border-left: 3px solid var(--bad); }
+  .callout .tag {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+    margin-bottom: 0.35rem;
+    display: inline-block;
+  }
+  .callout.good .tag { color: var(--good); }
+  .callout.bad .tag { color: var(--bad); }
+
+  ul, ol.plain { padding-left: 1.3rem; margin: 0.7rem 0; }
+  li { margin-bottom: 0.4rem; }
+
+  .quote {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 1rem;
+    color: var(--ink-muted);
+    border-left: 2px solid var(--line);
+    padding-left: 1rem;
+    margin: 1rem 0;
+  }
+  .quote cite {
+    display: block;
+    font-family: var(--mono);
+    font-style: normal;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-faint);
+    margin-top: 0.35rem;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+    margin: 0.9rem 0;
+  }
+  th {
+    text-align: left;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-faint);
+    border-bottom: 1px solid var(--line);
+    padding: 0.5rem 0.6rem 0.5rem 0;
+    font-weight: 600;
+  }
+  td {
+    border-bottom: 1px solid var(--line);
+    padding: 0.6rem 0.6rem 0.6rem 0;
+    vertical-align: top;
+  }
+  .table-scroll { overflow-x: auto; }
+
+  .pill {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.12rem 0.5rem;
+    border-radius: 999px;
+    letter-spacing: 0.02em;
+  }
+  .pill.built { background: var(--good-soft); color: var(--good); }
+  .pill.partial { background: var(--warn-soft); color: var(--warn); }
+  .pill.missing { background: var(--bad-soft); color: var(--bad); }
+
+  /* score meter */
+  .score-row td { vertical-align: middle; }
+  .meter {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .meter-track {
+    flex: 1;
+    height: 7px;
+    background: var(--line);
+    border-radius: 4px;
+    overflow: hidden;
+    min-width: 90px;
+  }
+  .meter-fill { height: 100%; border-radius: 4px; }
+  .meter-fill.bad { background: var(--bad); }
+  .meter-fill.warn { background: var(--warn); }
+  .meter-fill.good { background: var(--good); }
+  .meter-num {
+    font-family: var(--mono);
+    font-variant-numeric: tabular-nums;
+    font-size: 0.85rem;
+    font-weight: 700;
+    min-width: 2.6ch;
+    text-align: right;
+  }
+
+  .agent-card {
+    background: var(--paper-raised);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 1rem 1.15rem;
+    margin: 0.9rem 0;
+  }
+  .agent-card h3 {
+    font-family: var(--serif);
+    font-size: 1.05rem;
+    margin: 0 0 0.6rem;
+    font-weight: 600;
+  }
+  .agent-grid {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 0.3rem 0.9rem;
+    font-size: 0.86rem;
+  }
+  .agent-grid dt {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--ink-faint);
+    padding-top: 0.15rem;
+  }
+  .agent-grid dd { margin: 0; padding-top: 0.15rem; }
+
+  /* verdict */
+  .verdict {
+    background: var(--paper-raised);
+    border: 2px solid var(--bad);
+    border-radius: 6px;
+    padding: 1.6rem 1.7rem;
+    margin-top: 1rem;
+  }
+  .verdict .verdict-answer {
+    font-family: var(--serif);
+    font-size: 1.9rem;
+    font-weight: 600;
+    color: var(--bad);
+    margin: 0 0 0.3rem;
+  }
+  .verdict .verdict-sub {
+    font-size: 0.95rem;
+    color: var(--ink-muted);
+    margin-bottom: 1.1rem;
+  }
+  .verdict ol { margin-top: 0.6rem; }
+
+  footer.colophon {
+    margin-top: 3.5rem;
+    padding-top: 1.2rem;
+    border-top: 1px solid var(--line);
+    font-family: var(--mono);
+    font-size: 0.74rem;
+    color: var(--ink-faint);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  @media (max-width: 560px) {
+    nav.toc ol { columns: 1; }
+    h1.title { font-size: 1.85rem; }
+    .agent-grid { grid-template-columns: 1fr; }
+    .agent-grid dt { padding-top: 0.5rem; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <span class="eyebrow">Expert Panel Review · Hackathon Readiness Audit</span>
+    <h1 class="title">LaunchPad AI — Startup Intelligence Platform</h1>
+    <p class="subtitle">A ten-seat review — CTO, Head of Innovation, VC Partner, Startup Banking Executive, Solution Architect, Principal AI Engineer, UX Designer, Product Manager, Security Architect, Hackathon Judge — against the standard laid out for a global discovery-and-ranking platform.</p>
+    <div class="meta-row">
+      <span>SUBJECT — cross-border payments MVP, live at Cloud Run</span>
+      <span>DATA MODE — synthetic, single profile</span>
+      <span>VERDICT — see §11</span>
+    </div>
+  </header>
+
+  <div class="banner">
+    <span class="banner-label">Read this before the scorecard</span>
+    <p><b>The review brief describes a platform that does not exist yet, and this panel will not pretend otherwise.</b> It asks us to verify global sector search, live multi-source discovery, autonomous enrichment agents, and a ranked universe of startups. What is actually deployed — by explicit, agreed scope, given a same-day build window — is the single hero use case: one synthetic company (NovaTrade AI GmbH), scored deterministically for a cross-border-payments opportunity, narrated by one guarded LLM call, released only after a human approves it.</p>
+    <p>That is not a small gap. It is close to the entire discovery half of the brief. The panel's job below is to say, section by section, exactly what stands and exactly what is missing — not to soften either finding.</p>
+  </div>
+
+  <nav class="toc">
+    <span class="toc-label">Contents</span>
+    <ol>
+      <li><a href="#executive">Executive Review</a></li>
+      <li><a href="#architecture">Architecture Review</a></li>
+      <li><a href="#business">Business Review</a></li>
+      <li><a href="#ui">UI Review</a></li>
+      <li><a href="#agents">Agent Review</a></li>
+      <li><a href="#data">Data Quality Review</a></li>
+      <li><a href="#missing">Missing Features</a></li>
+      <li><a href="#bugs">Critical Bugs</a></li>
+      <li><a href="#quickwins">Quick Wins</a></li>
+      <li><a href="#roadmap">Future Roadmap</a></li>
+      <li><a href="#scorecard">Hackathon Scorecard</a></li>
+      <li><a href="#verdict">The Verdict</a></li>
+    </ol>
+  </nav>
+
+  <!-- 1 EXECUTIVE -->
+  <section class="block" id="executive">
+    <div class="block-head"><span class="block-num">01</span><h2 class="block-title">Executive Review</h2></div>
+    <p class="lens"><b>Seats:</b> CTO · Head of Innovation · VC Partner · Startup Banking Executive</p>
+
+    <p>Everyone at this end of the table read the same live demo two ways at once. As a piece of engineering delivered in about a day, with a working deploy pipeline and a defensible governance pattern, it is genuinely impressive. As the thing its name promises — a platform that discovers and ranks startups — it has not started.</p>
+
+    <div class="quote">"I can approve a scoring methodology for a company I already know about. I cannot approve a sourcing strategy I've never seen run."<cite>CTO</cite></div>
+    <div class="quote">"The part everyone underrates is the trust layer — mandatory human sign-off, a full audit trail, an explicit list of what the system will not claim. That's the actual blocker to bank adoption of AI, and it's handled well here. But 'AI-powered digital twin' in the deck implies enrichment happening today that isn't."<cite>Head of Innovation</cite></div>
+    <div class="quote">"I look at hundreds of deals a year. A tool that scores one hand-entered company doesn't touch my sourcing problem. The seven-factor weighting itself reads like a reasonable v1 of an internal scorecard — just disconnected from any pipeline of deals to run it against."<cite>VC Partner</cite></div>
+    <div class="quote">"This is the exact shape of brief I'd want on a client I'm already covering: why-now, evidence, suggested questions, product themes. Feed it my real book of business and it's useful tomorrow. It does nothing yet for a client I haven't met."<cite>Startup Banking Executive</cite></div>
+
+    <p><b>Panel consensus:</b> strong proof-of-concept for the <i>governance and decision-support</i> half of the vision; no proof-of-concept yet for the <i>discovery</i> half, which is the harder and more differentiating half.</p>
+  </section>
+
+  <!-- 2 ARCHITECTURE -->
+  <section class="block" id="architecture">
+    <div class="block-head"><span class="block-num">02</span><h2 class="block-title">Architecture Review</h2></div>
+    <p class="lens"><b>Seats:</b> Solution Architect · Principal AI Engineer · Security Architect</p>
+
+    <p>Backend is FastAPI + Pydantic v2 over Firestore, with a repository interface swapped between an in-memory store (tests) and Firestore (deployed) — a clean, appropriately small pattern for this scope. Scoring is pure Python, isolated from the one point where an LLM is called. CI/CD is GitHub Actions building a Docker image and deploying to Cloud Run via Workload Identity Federation — no static service-account keys anywhere, which is the right default and not always the default hackathon teams choose.</p>
+
+    <div class="callout good">
+      <span class="tag">Holds up</span>
+      Deterministic scoring is fully unit-tested (22 tests: determinism, threshold math, missing-data handling, RBAC, guardrails) and was verified against the real Firestore database directly, not just the in-memory test double.
+    </div>
+    <div class="callout bad">
+      <span class="tag">Overclaimed if presented as-is</span>
+      "Agentic AI" appears once in the entire runtime: a single Gemini call that rephrases two prose fields, wrapped in a substring-matching banned-phrase filter. There is no agent framework, no tool use, no retrieval, no memory, no orchestration between autonomous agents — the seven "agent" stages in the design doc are, in the deployed code, ordinary function calls in a pipeline. See §5.
+    </div>
+
+    <table>
+      <thead><tr><th>Layer</th><th>State</th><th>Note</th></tr></thead>
+      <tbody>
+        <tr><td>Ingestion / discovery</td><td><span class="pill missing">missing</span></td><td>No web/API search, no crawler, no scheduled refresh</td></tr>
+        <tr><td>Vector store / semantic search</td><td><span class="pill missing">missing</span></td><td>No embeddings anywhere in the system</td></tr>
+        <tr><td>Message queue / async workers</td><td><span class="pill missing">missing</span></td><td>Everything runs synchronously in-request</td></tr>
+        <tr><td>Caching layer</td><td><span class="pill missing">missing</span></td><td>Firestore reads happen on every request</td></tr>
+        <tr><td>Deterministic scoring engine</td><td><span class="pill built">built</span></td><td>7 weighted sub-scores, tested, versioned</td></tr>
+        <tr><td>LLM narrative + guardrail</td><td><span class="pill built">built</span></td><td>Single call, graceful fallback, substring guardrail only</td></tr>
+        <tr><td>Auth / RBAC</td><td><span class="pill built">built</span></td><td>JWT, 4 roles, enforced server-side</td></tr>
+        <tr><td>Audit log</td><td><span class="pill built">built</span></td><td>Every scoring/recommendation/approval event recorded</td></tr>
+        <tr><td>Secrets management</td><td><span class="pill partial">partial</span></td><td>Secret Manager enabled on the project, not yet wired — JWT secret is a per-deploy random env var</td></tr>
+        <tr><td>Network egress / CORS</td><td><span class="pill missing">missing</span></td><td><code>allow_origins=["*"]</code>, service is public/unauthenticated</td></tr>
+      </tbody>
+    </table>
+
+    <p><b>Simplification note for judges:</b> the architecture is already about as simple as this scope warrants — the right instinct here is not to add a vector DB or message queue before there is anything to queue. Build the ingestion layer first; the rest of the stack can stay exactly this small for a while longer.</p>
+  </section>
+
+  <!-- 3 BUSINESS -->
+  <section class="block" id="business">
+    <div class="block-head"><span class="block-num">03</span><h2 class="block-title">Business Review</h2></div>
+    <p class="lens"><b>Seats:</b> Startup Banking Executive · Product Manager</p>
+
+    <p>Every recommendation the system produces does answer "why engage" — the RM brief's <code>product_themes</code> field ties the score directly to concrete propositions (multi-currency accounts, virtual accounts, collections, FX exposure review, cash-visibility tooling). That traceability from evidence → score → product theme is real and is the single most bank-relevant design decision in the build.</p>
+
+    <div class="callout bad">
+      <span class="tag">Gap</span>
+      It only ever surfaces one opportunity type — cross-border payments and cash management — because that is the only scoring model implemented. Trade finance, credit, venture debt, accelerator partnership, and investment-banking referral opportunities exist in the source design document's own priority list but have no scoring logic behind them yet.
+    </div>
+    <div class="callout bad">
+      <span class="tag">Gap</span>
+      No pipeline-value rollup is exposed to the executive. The revenue-potential driver scores exist under the hood but never surface as an estimated deal size or expected wallet share anywhere in the UI.
+    </div>
+
+    <p><b>Product Manager's note:</b> this is the right sequencing decision for a hackathon — one opportunity type done honestly beats nine done shallowly — but the pitch needs to say "opportunity type 1 of 9, fully working end to end" rather than implying breadth that isn't there.</p>
+  </section>
+
+  <!-- 4 UI -->
+  <section class="block" id="ui">
+    <div class="block-head"><span class="block-num">04</span><h2 class="block-title">UI Review</h2></div>
+    <p class="lens"><b>Seat:</b> UX Designer, sitting as a bank executive with 30 seconds</p>
+
+    <p>The actual flow: sign in → a portfolio list (today, one card) → click through to Overview, a seven-way collapsible Scorecard, an RM Brief, and an Audit trail as separate tabs. Nothing about this is broken; it is analyst-detail information architecture wearing an executive-summary job.</p>
+
+    <div class="callout bad">
+      <span class="tag">30-second test: fails today</span>
+      Not because any single screen is bad — because there is no single glance that contains score, band, top opportunity, and top risk together. The Scorecard tab is the most detailed screen and the least scannable one; it is also the one an executive lands on first.
+    </div>
+    <div class="callout good">
+      <span class="tag">Worth keeping exactly as-is</span>
+      The "what this brief does <i>not</i> claim" section on the RM Brief tab. Most fintech dashboards never show their own boundaries; this one lists them in plain language next to the recommendation. Color-coded priority banding (high / monitor / validate / no-action) is also a clean, already-correct semantic pattern — don't touch it, extend it.
+    </div>
+
+    <p>Absent entirely: a search bar, sector or geography filters, a map, a side-by-side comparison view, and any single confidence indicator that rolls the seven sub-scores into one number an executive reads without opening anything.</p>
+    <p><b>One-line fix that changes the grade:</b> a summary strip above the tabs — final score, band, top opportunity, single top risk — turns this from "readable in five minutes" into "readable in thirty seconds," using data the backend already returns.</p>
+  </section>
+
+  <!-- 5 AGENTS -->
+  <section class="block" id="agents">
+    <div class="block-head"><span class="block-num">05</span><h2 class="block-title">Agent Review</h2></div>
+    <p class="lens"><b>Seat:</b> Principal AI Engineer</p>
+    <p>The design document names seven pipeline stages "agents." Reviewed against what actually runs in production, one of them touches an LLM at all.</p>
+
+    <div class="agent-card">
+      <h3>1–2 · Signal Ingestion &amp; Digital Twin</h3>
+      <dl class="agent-grid">
+        <dt>Reality</dt><dd>Not agents — a hardcoded seed loader and an in-memory context object. No live source, no scheduling, no retry, because there is nothing to retry against.</dd>
+        <dt>Verdict</dt><dd><span class="pill missing">not built as agents</span> — this is the work described in §7/§9 as the actual next build.</dd>
+      </dl>
+    </div>
+
+    <div class="agent-card">
+      <h3>3 · Decathlon / Opportunity Scoring</h3>
+      <dl class="agent-grid">
+        <dt>Purpose</dt><dd>Turn profile + payment + pain-point + signal data into 7 weighted sub-scores and a final band.</dd>
+        <dt>Input / Output</dt><dd>Structured records in → a fully-explained <code>ScoreRecord</code> out (every driver carries a rationale).</dd>
+        <dt>Dependencies</dt><dd>None external — pure Python, zero network calls.</dd>
+        <dt>Failure handling</dt><dd>Missing mandatory data is flagged, never silently scored as zero; can force a lower band even if the raw math clears the threshold.</dd>
+        <dt>Confidence / Retry / Fallback</dt><dd>Confidence band per sub-score; nothing to retry (deterministic); no fallback needed.</dd>
+        <dt>Verdict</dt><dd><span class="pill built">real, and the strongest component in the system</span> — but it is a scoring function, not an agent in any sense an AI engineer would use the word.</dd>
+      </dl>
+    </div>
+
+    <div class="agent-card">
+      <h3>4 · Recommendation narrative</h3>
+      <dl class="agent-grid">
+        <dt>Purpose</dt><dd>Rephrase two already-computed prose fields (client summary, why-now) into fluent text.</dd>
+        <dt>Input / Output</dt><dd>Deterministic template text in → LLM prose out, or the same template if the model call fails.</dd>
+        <dt>Dependencies</dt><dd>Vertex AI Gemini — a soft dependency by design.</dd>
+        <dt>Failure handling</dt><dd>Confirmed working: on any Vertex error, silently reverts to the deterministic template. The system's correctness never depends on this call succeeding.</dd>
+        <dt>Confidence / Retry</dt><dd>No confidence score on the LLM output itself; single attempt, then fallback — no retry loop.</dd>
+        <dt>Human review</dt><dd><span class="pill built">hard-gated</span> — cannot reach client-facing status without an authenticated RM approval. This is the standout governance decision in the whole build.</dd>
+      </dl>
+    </div>
+
+    <div class="agent-card">
+      <h3>6 · Trust &amp; Control</h3>
+      <dl class="agent-grid">
+        <dt>Purpose</dt><dd>Block regulated-advice or guaranteed-outcome language before it can ship.</dd>
+        <dt>Reality</dt><dd>A fixed list of banned substrings ("guaranteed," "suitable for you," "credit approval," …), case-insensitive.</dd>
+        <dt>Failure mode</dt><dd>Trivially bypassable by paraphrase — "this should pay off nicely" would sail through what "guaranteed" would catch.</dd>
+        <dt>Verdict</dt><dd><span class="pill partial">real but shallow</span> — good instinct, needs either a broader phrase list or a lightweight semantic classifier before any real deployment.</dd>
+      </dl>
+    </div>
+
+    <div class="agent-card">
+      <h3>7 · Audit &amp; Learning</h3>
+      <dl class="agent-grid">
+        <dt>Audit half</dt><dd><span class="pill built">real</span> — 100% of scoring, recommendation, and approval events are logged with actor and timestamp.</dd>
+        <dt>Learning half</dt><dd><span class="pill missing">not built</span> — weights are proposed and activated by a human through an API; nothing yet calibrates them from RM feedback or outcomes.</dd>
+      </dl>
+    </div>
+
+    <p><b>What's actually missing, if the brief's discovery vision is the target:</b> a Source Discovery agent (search by sector across live APIs), an Extraction/Normalization agent (unstructured text → structured signal), a Deduplication agent (same company found via two sources), and a Corroboration agent (don't trust a signal until ≥2 independent sources agree). None exist today. Do not build all four at once — Source Discovery plus Deduplication is the pair that unlocks the most credibility per unit of effort.</p>
+    <p><b>What should not be added:</b> more pipeline stages for their own sake. Six of the seven "agents" here could correctly be described as one scoring function, one narrow LLM call, and a logger — that is the right amount of complexity for what this does, and a bank's model-risk function will prefer fewer, well-understood components to a sprawling agent graph.</p>
+  </section>
+
+  <!-- 6 DATA QUALITY -->
+  <section class="block" id="data">
+    <div class="block-head"><span class="block-num">06</span><h2 class="block-title">Data Quality Review</h2></div>
+    <p class="lens"><b>Seat:</b> Principal AI Engineer · Solution Architect</p>
+    <p>There is exactly one record of substance in the system: a hand-authored synthetic profile for "NovaTrade AI GmbH," with hand-authored confidence values (0.7–0.9) on its expansion signals rather than confidence computed from actual source reliability.</p>
+    <div class="callout bad">
+      <span class="tag">"Live data" claim</span>
+      False today, and worth stating plainly rather than hedging: nothing in the system refreshes on its own. A Firestore document changes only when a human calls the API again. Staleness is not yet the right risk to worry about, because there is no live feed old enough to go stale — the honest framing is "pre-live," not "live with gaps."
+    </div>
+    <div class="callout bad">
+      <span class="tag">Duplicate risk</span>
+      No deduplication logic exists anywhere. Two different <code>startup_id</code> values for the same real company would silently coexist and could receive different scores with no cross-check.
+    </div>
+    <p>None of this is a defect in what was built — it is the correct description of a system that has not yet reached the discovery stage. It should be described that way in the room, not glossed over.</p>
+  </section>
+
+  <!-- 7 MISSING FEATURES -->
+  <section class="block" id="missing">
+    <div class="block-head"><span class="block-num">07</span><h2 class="block-title">Missing Features</h2></div>
+    <p class="lens">Mapped directly against the review brief's own checklist.</p>
+    <div class="table-scroll">
+    <table>
+      <thead><tr><th>Capability requested in the brief</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>Search by sector (AI, FinTech, ClimateTech, …)</td><td><span class="pill missing">missing</span></td></tr>
+        <tr><td>Automatic global startup discovery</td><td><span class="pill missing">missing</span></td></tr>
+        <tr><td>Live multi-source enrichment (funding, GitHub, patents, hiring, news, …)</td><td><span class="pill missing">missing</span></td></tr>
+        <tr><td>Vector database / semantic matching</td><td><span class="pill missing">missing</span></td></tr>
+        <tr><td>Multi-startup ranking &amp; comparison view</td><td><span class="pill partial">partial</span> — backend supports many profiles; frontend has no comparison UI and only one profile exists</td></tr>
+        <tr><td>Country map / industry filters / search bar</td><td><span class="pill missing">missing</span></td></tr>
+        <tr><td>One-glance confidence indicator</td><td><span class="pill partial">partial</span> — per-driver confidence bands exist, nothing rolled up</td></tr>
+        <tr><td>Weight-change approval screen (Admin approves Product Owner's proposal)</td><td><span class="pill partial">partial</span> — API exists, no frontend screen</td></tr>
+        <tr><td>Rate limiting / abuse protection</td><td><span class="pill missing">missing</span></td></tr>
+        <tr><td>Secrets in Secret Manager</td><td><span class="pill partial">partial</span> — enabled on the project, not wired in</td></tr>
+        <tr><td>Deterministic scoring with full rationale</td><td><span class="pill built">built</span></td></tr>
+        <tr><td>Mandatory human approval before release</td><td><span class="pill built">built</span></td></tr>
+        <tr><td>Full audit trail</td><td><span class="pill built">built</span></td></tr>
+      </tbody>
+    </table>
+    </div>
+  </section>
+
+  <!-- 8 CRITICAL BUGS -->
+  <section class="block" id="bugs">
+    <div class="block-head"><span class="block-num">08</span><h2 class="block-title">Critical Bugs</h2></div>
+    <p class="lens"><b>Seat:</b> Security Architect · Solution Architect</p>
+    <p><b>Found and already fixed, live, during this build</b> — kept here for the audit trail, not as open items: Firestore rejected the weight-config data (nested arrays aren't supported by Firestore and had to be remodeled); an audit/score query required a composite index that hadn't been provisioned, worked around by sorting in Python instead; the <code>/healthz</code> path was silently intercepted ahead of the app on this project's Cloud Run domain and was moved to <code>/api/health</code>.</p>
+    <p><b>Still open:</b></p>
+    <ul>
+      <li><b>CORS is wide open</b> (<code>allow_origins=["*"]</code>) and the service is deployed publicly unauthenticated — acceptable for a synthetic demo, not for anything beyond it.</li>
+      <li><b>JWT secret regenerates on every deploy</b> rather than living in Secret Manager — every redeploy silently signs everyone out. Fine for a hackathon, a real rough edge the moment this runs continuously.</li>
+      <li><b>Guardrail is substring-only</b> — see §5, easily bypassed by paraphrase.</li>
+      <li><b>One driver table (control &amp; implementation feasibility) is an invented, documented assumption</b> — the source design document names this scoring dimension but never publishes its weights the way it does for the other six; a bank would need to formally bless these five weights before trusting the "high priority" threshold in a real decision.</li>
+    </ul>
+  </section>
+
+  <!-- 9 QUICK WINS -->
+  <section class="block" id="quickwins">
+    <div class="block-head"><span class="block-num">09</span><h2 class="block-title">Quick Wins</h2></div>
+    <p class="lens">Ranked by impact per hour of remaining hackathon time. No new infrastructure — everything here uses what is already deployed.</p>
+    <ol class="plain">
+      <li><b>Seed 4–6 more diverse synthetic startups</b> through the existing <code>POST /profiles</code> endpoint, spanning different bands (high / monitor / validate). This is the single highest-leverage change available: it turns the portfolio screen from a one-item list into an actual ranked comparison, using only what already works today.</li>
+      <li><b>Add a one-line executive summary strip</b> above the detail tabs — score, band, top opportunity, top risk — directly answering the 30-second critique in §4.</li>
+      <li><b>Restrict CORS</b> to the deployed frontend origin instead of <code>*</code>.</li>
+      <li><b>Move the JWT secret into Secret Manager</b> with a fixed value instead of regenerating it on every deploy, so sessions survive a redeploy during the demo day.</li>
+      <li><b>Extend the guardrail phrase list</b> with a handful of obvious paraphrases ("confident this will," "low-risk investment," …) — ten minutes of work, meaningfully lowers the worst-case live-demo slip.</li>
+      <li><b>Fix the pitch language, not the code</b>: describe this as a governed scoring-and-advisory workflow with one narrow, guarded LLM call — not an agentic discovery platform. A technically literate judge will respect a scoped MVP and penalize an overclaimed one.</li>
+    </ol>
+  </section>
+
+  <!-- 10 ROADMAP -->
+  <section class="block" id="roadmap">
+    <div class="block-head"><span class="block-num">10</span><h2 class="block-title">Future Roadmap</h2></div>
+    <p class="lens">Sequenced by what each phase actually unlocks.</p>
+    <table>
+      <thead><tr><th>Phase</th><th>Unlocks</th></tr></thead>
+      <tbody>
+        <tr><td><b>Weeks</b></td><td>Sector-based discovery via a small set of licensed data sources (company registries, GitHub API, funding databases) behind a real ingestion + normalization layer; a genuine Admin approval screen for weight changes, replacing the API-only flow.</td></tr>
+        <tr><td><b>Months</b></td><td>A semantic layer (vector store) for "find startups like this one"; a corroboration step requiring ≥2 independent sources before a signal counts toward scoring; a real feedback loop from RM outcomes back into weight calibration; rate limiting and tenant isolation.</td></tr>
+        <tr><td><b>Later</b></td><td>Score the remaining eight opportunity types from the source design document; multi-geography scaling; portfolio-level views for coverage leads; the moment any real (non-synthetic) client data enters the system, a full re-run of the data-governance and compliance review — this MVP's synthetic-only scope was a deliberate choice, not a default that carries over automatically.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- SCORECARD -->
+  <section class="block" id="scorecard">
+    <div class="block-head"><span class="block-num">§</span><h2 class="block-title">Hackathon Scorecard</h2></div>
+    <div class="table-scroll">
+    <table>
+      <thead><tr><th>Dimension</th><th style="width:44%">Score</th><th>Why</th></tr></thead>
+      <tbody>
+        <tr class="score-row"><td>Innovation</td><td><div class="meter"><div class="meter-track"><div class="meter-fill warn" style="width:50%"></div></div><span class="meter-num">5</span></div></td><td>Trust-first framing is genuinely distinctive; discovery — the actually novel part — is unbuilt</td></tr>
+        <tr class="score-row"><td>Business Value</td><td><div class="meter"><div class="meter-track"><div class="meter-fill warn" style="width:50%"></div></div><span class="meter-num">5</span></div></td><td>Real value for a known client, none yet for sourcing new ones</td></tr>
+        <tr class="score-row"><td>Technical Depth</td><td><div class="meter"><div class="meter-track"><div class="meter-fill good" style="width:70%"></div></div><span class="meter-num">7</span></div></td><td>22 tests, clean layering, live-debugged to a working deploy</td></tr>
+        <tr class="score-row"><td>Agentic AI</td><td><div class="meter"><div class="meter-track"><div class="meter-fill bad" style="width:20%"></div></div><span class="meter-num">2</span></div></td><td>One guarded LLM call with a fallback is not an agent system</td></tr>
+        <tr class="score-row"><td>Architecture</td><td><div class="meter"><div class="meter-track"><div class="meter-fill good" style="width:70%"></div></div><span class="meter-num">7</span></div></td><td>Appropriately simple; missing layer is ingestion, not structure</td></tr>
+        <tr class="score-row"><td>User Experience</td><td><div class="meter"><div class="meter-track"><div class="meter-fill bad" style="width:40%"></div></div><span class="meter-num">4</span></div></td><td>Functional, analyst-detail; fails the 30-second test today</td></tr>
+        <tr class="score-row"><td>Banking Relevance</td><td><div class="meter"><div class="meter-track"><div class="meter-fill warn" style="width:60%"></div></div><span class="meter-num">6</span></div></td><td>Approval gate and audit trail target a real adoption blocker</td></tr>
+        <tr class="score-row"><td>Scalability</td><td><div class="meter"><div class="meter-track"><div class="meter-fill bad" style="width:30%"></div></div><span class="meter-num">3</span></div></td><td>The stack scales fine; there's no pipeline yet to scale</td></tr>
+        <tr class="score-row"><td>Demo Quality</td><td><div class="meter"><div class="meter-track"><div class="meter-fill warn" style="width:60%"></div></div><span class="meter-num">6</span></div></td><td>One flow works reliably, live; higher after Quick Win #1</td></tr>
+        <tr class="score-row"><td>Judge Appeal</td><td><div class="meter"><div class="meter-track"><div class="meter-fill warn" style="width:50%"></div></div><span class="meter-num">5</span></div></td><td>Lands with governance-minded judges, underwhelms discovery-expecting ones</td></tr>
+        <tr class="score-row"><td>Presentation Readiness</td><td><div class="meter"><div class="meter-track"><div class="meter-fill warn" style="width:60%"></div></div><span class="meter-num">6</span></div></td><td>Live right now; needs the framing fix in Quick Win #6</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </section>
+
+  <!-- VERDICT -->
+  <section class="block" id="verdict">
+    <div class="block-head"><span class="block-num">11</span><h2 class="block-title">The Verdict</h2></div>
+    <p class="lens">"If this application were demonstrated today in front of senior banking executives, would they trust the recommendations enough to initiate engagement with the identified startups?"</p>
+    <div class="verdict">
+      <p class="verdict-answer">No.</p>
+      <p class="verdict-sub">Not because the scoring is unreliable — because there is only one company in the system, and it's synthetic. There is nothing yet to "initiate engagement" <i>with</i>, in the sense the question asks. A narrower, honest yes is available: executives could reasonably trust the <i>decision-support mechanics</i> — transparent scoring, mandatory human sign-off, a complete audit trail — as a credible pattern worth funding to build out against real data and real discovery. That is a real answer, just a smaller one than the brief assumes.</p>
+      <p><b>What must change before any such demonstration lands honestly:</b></p>
+      <ol class="plain">
+        <li>Reframe the pitch as "a trust-first scoring and advisory workflow for a proven opportunity type," not "AI discovers and ranks the world's startups" — the build cannot support the second claim and an alert executive finds the gap within two minutes.</li>
+        <li>Run Quick Win #1 before anyone opens the dashboard — seed several diverse profiles so there is an actual ranking on screen, not a single card.</li>
+        <li>Say plainly, in the room, what "AI agent" means here: one narrow, guarded, fallback-safe LLM call for prose, nothing more — which is not a weakness to hide but the same governance principle the source design document itself insists on: decision support, never autonomous advice.</li>
+      </ol>
+    </div>
+  </section>
+
+  <footer class="colophon">
+    <span>Expert panel review — hackathon readiness audit</span>
+    <span>Ten seats, one honest scorecard</span>
+  </footer>
+
+</div>
