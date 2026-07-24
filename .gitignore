@@ -1,0 +1,4 @@
+
+# pitch build artifacts
+pitch/__pycache__/
+pitch/recordings/

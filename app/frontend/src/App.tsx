@@ -8,6 +8,8 @@ import StartupDetail from './components/StartupDetail'
 import DiscoveryPanel from './components/DiscoveryPanel'
 import CompareView from './components/CompareView'
 import WeightsAdmin from './components/WeightsAdmin'
+import ExecutiveView from './components/ExecutiveView'
+import ResponsibleAIPanel from './components/ResponsibleAIPanel'
 import { formatEur } from './format'
 import {
   AppHeader,
@@ -21,13 +23,15 @@ import {
 import './theme.css'
 import './App.css'
 
-type View = 'portfolio' | 'discovery' | 'compare' | 'weights'
+type View = 'portfolio' | 'executive' | 'discovery' | 'compare' | 'weights' | 'responsible'
 
 const NAV: { key: View; label: string }[] = [
   { key: 'portfolio', label: 'Portfolio' },
+  { key: 'executive', label: 'Executive' },
   { key: 'discovery', label: 'Live discovery' },
   { key: 'compare', label: 'Compare' },
   { key: 'weights', label: 'Weights governance' },
+  { key: 'responsible', label: 'Responsible AI' },
 ]
 
 function App() {
@@ -147,6 +151,17 @@ function App() {
           </div>
         )}
 
+        {view === 'executive' && (
+          <div className="panel">
+            <ExecutiveView
+              onSelect={(id) => {
+                setSelectedId(id)
+                setView('portfolio')
+              }}
+            />
+          </div>
+        )}
+
         {view === 'discovery' && (
           <div className="panel">
             <div className="live-populate">
@@ -191,6 +206,12 @@ function App() {
         {view === 'weights' && (
           <div className="panel">
             <WeightsAdmin role={user.role} />
+          </div>
+        )}
+
+        {view === 'responsible' && (
+          <div className="panel">
+            <ResponsibleAIPanel />
           </div>
         )}
       </main>
