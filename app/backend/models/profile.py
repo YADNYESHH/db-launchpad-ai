@@ -23,6 +23,12 @@ class StartupProfile(BaseModel):
     expansion_timeline_months: int | None = None
     synthetic_flag: bool = True
     data_source_type: DataSourceType = DataSourceType.SYNTHETIC
+    # Public source URLs cited by Google Search grounding when this profile was
+    # discovered live. Empty for synthetic/manual profiles.
+    source_citations: list[str] = Field(default_factory=list)
+    # One-line note on what public evidence backs the estimated figures, so a
+    # discovered profile is never presented as if its numbers were confirmed.
+    discovery_note: str = ""
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     @field_validator("annual_revenue_eur")

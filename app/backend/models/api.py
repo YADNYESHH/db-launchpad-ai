@@ -3,8 +3,10 @@ kept separate from the domain models in this package's other modules."""
 
 from pydantic import BaseModel
 
+from ..scoring.decathlon import DecathlonTwin
 from .enums import ApprovalStatus
 from .profile import ExpansionSignal, PainPointProfile, PaymentProfile, StartupProfile
+from .scoring import ScoreRecord
 from .weights import DriverWeight
 
 
@@ -20,6 +22,17 @@ class ProfileBundle(BaseModel):
     payment: PaymentProfile | None = None
     pain: PainPointProfile | None = None
     signals: list[ExpansionSignal] = []
+    # Latest score for this startup, if it has been scored. Lets the portfolio
+    # view rank startups without a second round-trip per card.
+    score: ScoreRecord | None = None
+    # 10-dimension Decathlon digital-twin maturity view (current-state, distinct
+    # from the opportunity score).
+    decathlon: DecathlonTwin | None = None
+
+
+class DiscoveryRequest(BaseModel):
+    sector: str
+    limit: int = 4
 
 
 class GenerateRecommendationRequest(BaseModel):

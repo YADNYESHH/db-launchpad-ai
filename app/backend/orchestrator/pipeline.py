@@ -4,12 +4,15 @@ generated outputs, approval status, and timestamps" — 100% of events)."""
 import uuid
 from datetime import datetime, timezone
 
+from ..discovery import discover_startups
+from ..discovery.mapper import to_models
 from ..models import ApprovalStatus, RecommendationRecord, ScoreRecord
 from ..models.weights import default_weight_config
 from ..scoring import ScoringContext, score_startup
 from ..store import Store
 from .audit import log_event
 from .recommend import generate_recommendation
+from .validation import find_duplicate_profile
 
 
 class NotFoundError(Exception):
@@ -22,6 +25,74 @@ def ensure_weight_config(store: Store):
         config = default_weight_config(version_id="v1", owner="system")
         store.save_weight_config(config)
     return config
+
+
+def run_discovery(store: Store, sector: str, actor: str, limit: int = 4) -> dict:
+    """Live-discover startups for a sector, dedup against what's already stored,
+    persist the new ones, score each, and return a ranked summary. Degrades
+    gracefully: if discovery is unavailable, returns an empty result with a
+    reason rather than raising, so the caller keeps the synthetic seed."""
+    discovered, reason = discover_startups(sector, limit=limit)
+    if not discovered:
+        log_event(store, "system", "discovery_empty", payload={"sector": sector, "reason": reason}, actor=actor)
+        return {"sector": sector, "discovered": [], "reason": reason}
+
+    existing = store.list_profiles()
+    results = []
+    for d in discovered:
+        profile, payment, signals = to_models(d)
+
+        duplicate = find_duplicate_profile(existing, profile)
+        if duplicate is not None:
+            results.append(
+                {
+                    "startup_id": duplicate.startup_id,
+                    "name": duplicate.name,
+                    "status": "already_known",
+                    "note": f"Already in portfolio as {duplicate.startup_id}.",
+                }
+            )
+            continue
+
+        store.save_profile(profile)
+        if payment:
+            store.save_payment_profile(payment)
+        if signals:
+            store.save_signals(profile.startup_id, signals)
+        existing.append(profile)
+
+        log_event(
+            store,
+            profile.startup_id,
+            "startup_discovered",
+            payload={
+                "sector": sector,
+                "name": profile.name,
+                "source_citations": profile.source_citations,
+                "data_source_type": profile.data_source_type.value,
+            },
+            actor=actor,
+        )
+
+        score_id, record = run_scoring(store, profile.startup_id, actor=actor)
+        results.append(
+            {
+                "startup_id": profile.startup_id,
+                "name": profile.name,
+                "status": "discovered",
+                "final_score": record.final_score,
+                "priority_band": record.priority_band.value,
+                "score_id": score_id,
+            }
+        )
+
+    # Rank discovered startups by final score, newly-discovered first.
+    ranked = sorted(
+        results,
+        key=lambda r: r.get("final_score", -1),
+        reverse=True,
+    )
+    return {"sector": sector, "discovered": ranked, "reason": None}
 
 
 def run_scoring(store: Store, startup_id: str, actor: str) -> tuple[str, ScoreRecord]:

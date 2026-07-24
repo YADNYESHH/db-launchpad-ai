@@ -26,6 +26,7 @@ class ApprovalStatus(str, Enum):
 class DataSourceType(str, Enum):
     SYNTHETIC = "synthetic"
     PUBLIC_MANUAL = "public_manual"
+    LIVE_GROUNDED = "live_grounded"  # discovered live via Gemini + Google Search grounding
 
 
 class ConfidenceBand(str, Enum):

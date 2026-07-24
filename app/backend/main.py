@@ -14,6 +14,7 @@ from .models import Role, UserPublic
 from .models.api import (
     CreateProfileRequest,
     DecideRecommendationRequest,
+    DiscoveryRequest,
     GenerateRecommendationRequest,
     ProfileBundle,
     ProposeWeightConfigRequest,
@@ -22,19 +23,17 @@ from .orchestrator import (
     NotFoundError,
     decide_recommendation,
     ensure_weight_config,
+    run_discovery,
     run_recommendation,
     run_scoring,
 )
 from .orchestrator.audit import log_event
 from .orchestrator.validation import find_duplicate_profile
+from .scoring import ScoringContext, compute_decathlon
 from .seed.data import (
     DEFAULT_WEIGHT_CONFIG,
     DEMO_USERS,
-    NOVATRADE_ID,
-    NOVATRADE_PAIN_POINT_PROFILE,
-    NOVATRADE_PAYMENT_PROFILE,
-    NOVATRADE_PROFILE,
-    NOVATRADE_SIGNALS,
+    SEED_PROFILES,
 )
 from .store import get_store
 
@@ -43,12 +42,13 @@ logger = logging.getLogger(__name__)
 
 def _seed_if_empty() -> None:
     store = get_store()
-    if store.get_profile(NOVATRADE_ID) is None:
-        store.save_profile(NOVATRADE_PROFILE)
-        store.save_payment_profile(NOVATRADE_PAYMENT_PROFILE)
-        store.save_pain_point_profile(NOVATRADE_PAIN_POINT_PROFILE)
-        store.save_signals(NOVATRADE_ID, NOVATRADE_SIGNALS)
-        logger.info("Seeded synthetic NovaTrade AI GmbH profile.")
+    for profile, payment, pain, signals in SEED_PROFILES:
+        if store.get_profile(profile.startup_id) is None:
+            store.save_profile(profile)
+            store.save_payment_profile(payment)
+            store.save_pain_point_profile(pain)
+            store.save_signals(profile.startup_id, signals)
+            logger.info("Seeded synthetic profile %s (%s).", profile.startup_id, profile.name)
     if store.get_active_weight_config() is None:
         store.save_weight_config(DEFAULT_WEIGHT_CONFIG)
         logger.info("Seeded default weight config v1.")
@@ -56,6 +56,13 @@ def _seed_if_empty() -> None:
         if store.get_user_by_email(user.email) is None:
             store.save_user(user)
     logger.info("Seeded %d demo users.", len(DEMO_USERS))
+
+    for profile in store.list_profiles():
+        if store.get_latest_score_record(profile.startup_id) is None:
+            try:
+                run_scoring(store, profile.startup_id, actor="system")
+            except Exception:
+                logger.exception("Failed to auto-score profile %s", profile.startup_id)
 
 
 @asynccontextmanager
@@ -143,18 +150,34 @@ def create_profile(
     }
 
 
+def _build_bundle(store, profile) -> ProfileBundle:
+    latest = store.get_latest_score_record(profile.startup_id)
+    payment = store.get_payment_profile(profile.startup_id)
+    pain = store.get_pain_point_profile(profile.startup_id)
+    signals = store.get_signals(profile.startup_id)
+    ctx = ScoringContext(
+        profile=profile,
+        weight_config=ensure_weight_config(store),
+        payment=payment,
+        pain=pain,
+        signals=signals,
+    )
+    return ProfileBundle(
+        profile=profile,
+        payment=payment,
+        pain=pain,
+        signals=signals,
+        score=latest[1] if latest else None,
+        decathlon=compute_decathlon(ctx),
+    )
+
+
 @app.get("/profiles", response_model=list[ProfileBundle])
 def list_profiles(current: TokenPayload = Depends(get_current_user)):
     store = get_store()
-    return [
-        ProfileBundle(
-            profile=p,
-            payment=store.get_payment_profile(p.startup_id),
-            pain=store.get_pain_point_profile(p.startup_id),
-            signals=store.get_signals(p.startup_id),
-        )
-        for p in store.list_profiles()
-    ]
+    bundles = [_build_bundle(store, p) for p in store.list_profiles()]
+    # Ranked: scored startups first (highest score first), unscored after.
+    return sorted(bundles, key=lambda b: b.score.final_score if b.score else -1, reverse=True)
 
 
 @app.get("/profiles/{startup_id}", response_model=ProfileBundle)
@@ -163,12 +186,21 @@ def get_profile(startup_id: str, current: TokenPayload = Depends(get_current_use
     profile = store.get_profile(startup_id)
     if profile is None:
         raise HTTPException(status_code=404, detail=f"No profile found for startup_id={startup_id}")
-    return ProfileBundle(
-        profile=profile,
-        payment=store.get_payment_profile(startup_id),
-        pain=store.get_pain_point_profile(startup_id),
-        signals=store.get_signals(startup_id),
-    )
+    return _build_bundle(store, profile)
+
+
+# ------------------------------------------------------------ discovery -----
+@app.post("/discovery/search")
+def discovery_search(
+    req: DiscoveryRequest,
+    current: TokenPayload = Depends(require_roles(Role.RM, Role.PRODUCT_OWNER)),
+):
+    """Live-discover real startups for a sector via grounded search, score
+    them, and return a ranked summary. Degrades gracefully if grounding is
+    unavailable (returns reason, keeps the synthetic seed intact)."""
+    store = get_store()
+    limit = max(1, min(req.limit, 6))
+    return run_discovery(store, req.sector, actor=current.user_id, limit=limit)
 
 
 @app.post("/profiles/{startup_id}/score")
