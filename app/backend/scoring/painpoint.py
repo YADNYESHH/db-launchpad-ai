@@ -1,5 +1,5 @@
 """Client Pain-Point Intensity driver functions (doc pp. 20-21)."""
-from .context import ScoringContext, DriverResult, clamp
+from .context import DriverResult, ScoringContext, clamp
 
 _MAX_RECONCILIATION_HOURS_WEEKLY = 20
 _MAX_FAILED_PAYMENTS_MONTHLY = 20

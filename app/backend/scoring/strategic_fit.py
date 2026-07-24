@@ -1,5 +1,5 @@
 """Strategic Fit driver functions (doc pp. 16-17)."""
-from .context import ScoringContext, DriverResult, clamp
+from .context import DriverResult, ScoringContext, clamp
 
 
 def corporate_bank_product_depth(ctx: ScoringContext) -> DriverResult:

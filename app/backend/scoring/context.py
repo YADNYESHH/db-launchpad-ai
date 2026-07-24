@@ -1,6 +1,11 @@
 from dataclasses import dataclass, field
 
-from ..models.profile import ExpansionSignal, PainPointProfile, PaymentProfile, StartupProfile
+from ..models.profile import (
+    ExpansionSignal,
+    PainPointProfile,
+    PaymentProfile,
+    StartupProfile,
+)
 from ..models.weights import WeightConfig
 
 

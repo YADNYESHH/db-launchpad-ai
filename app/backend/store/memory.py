@@ -1,6 +1,5 @@
 """In-memory Store implementation: used for local development, tests, and
 CI — anywhere Firestore credentials are not available or not wanted."""
-from typing import Optional
 
 from ..models import (
     AuditEvent,
@@ -32,7 +31,7 @@ class InMemoryStore(Store):
     def save_profile(self, profile: StartupProfile) -> None:
         self._profiles[profile.startup_id] = profile
 
-    def get_profile(self, startup_id: str) -> Optional[StartupProfile]:
+    def get_profile(self, startup_id: str) -> StartupProfile | None:
         return self._profiles.get(startup_id)
 
     def list_profiles(self) -> list[StartupProfile]:
@@ -41,13 +40,13 @@ class InMemoryStore(Store):
     def save_payment_profile(self, payment: PaymentProfile) -> None:
         self._payments[payment.startup_id] = payment
 
-    def get_payment_profile(self, startup_id: str) -> Optional[PaymentProfile]:
+    def get_payment_profile(self, startup_id: str) -> PaymentProfile | None:
         return self._payments.get(startup_id)
 
     def save_pain_point_profile(self, pain: PainPointProfile) -> None:
         self._pains[pain.startup_id] = pain
 
-    def get_pain_point_profile(self, startup_id: str) -> Optional[PainPointProfile]:
+    def get_pain_point_profile(self, startup_id: str) -> PainPointProfile | None:
         return self._pains.get(startup_id)
 
     def save_signals(self, startup_id: str, signals: list[ExpansionSignal]) -> None:
@@ -60,10 +59,10 @@ class InMemoryStore(Store):
         self._scores[score_id] = record
         self._scores_by_startup.setdefault(record.startup_id, []).append(score_id)
 
-    def get_score_record(self, score_id: str) -> Optional[ScoreRecord]:
+    def get_score_record(self, score_id: str) -> ScoreRecord | None:
         return self._scores.get(score_id)
 
-    def get_latest_score_record(self, startup_id: str) -> Optional[tuple[str, ScoreRecord]]:
+    def get_latest_score_record(self, startup_id: str) -> tuple[str, ScoreRecord] | None:
         ids = self._scores_by_startup.get(startup_id, [])
         if not ids:
             return None
@@ -73,7 +72,7 @@ class InMemoryStore(Store):
     def save_recommendation(self, rec: RecommendationRecord) -> None:
         self._recommendations[rec.recommendation_id] = rec
 
-    def get_recommendation(self, recommendation_id: str) -> Optional[RecommendationRecord]:
+    def get_recommendation(self, recommendation_id: str) -> RecommendationRecord | None:
         return self._recommendations.get(recommendation_id)
 
     def append_audit_event(self, event: AuditEvent) -> None:
@@ -85,16 +84,16 @@ class InMemoryStore(Store):
     def save_weight_config(self, config: WeightConfig) -> None:
         self._weight_configs[config.version_id] = config
 
-    def get_active_weight_config(self) -> Optional[WeightConfig]:
+    def get_active_weight_config(self) -> WeightConfig | None:
         active = [c for c in self._weight_configs.values() if c.active]
         if not active:
             return None
-        return sorted(active, key=lambda c: c.created_date)[-1]
+        return max(active, key=lambda c: c.created_date)
 
     def list_weight_configs(self) -> list[WeightConfig]:
         return list(self._weight_configs.values())
 
-    def get_user_by_email(self, email: str) -> Optional[User]:
+    def get_user_by_email(self, email: str) -> User | None:
         return self._users.get(email)
 
     def save_user(self, user: User) -> None:

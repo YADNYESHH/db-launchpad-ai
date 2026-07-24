@@ -1,5 +1,5 @@
 """Data Availability & Explainability driver functions (doc pp. 18-19)."""
-from .context import ScoringContext, DriverResult, clamp
+from .context import DriverResult, ScoringContext, clamp
 
 
 def source_reliability(ctx: ScoringContext) -> DriverResult:

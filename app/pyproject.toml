@@ -1,0 +1,13 @@
+[tool.ruff]
+line-length = 150
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "FURB", "DTZ", "SIM"]
+ignore = [
+    "B008",   # Depends(...) in argument defaults is FastAPI's documented DI pattern, not a bug.
+]
+
+[tool.ruff.lint.per-file-ignores]
+"backend/tests/*" = [
+    "DTZ011",  # date.today() is correct here: signal_date is a date, not a datetime.
+]

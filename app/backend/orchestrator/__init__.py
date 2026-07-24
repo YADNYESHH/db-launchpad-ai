@@ -1,4 +1,10 @@
-from .pipeline import NotFoundError, decide_recommendation, ensure_weight_config, run_recommendation, run_scoring
+from .pipeline import (
+    NotFoundError,
+    decide_recommendation,
+    ensure_weight_config,
+    run_recommendation,
+    run_scoring,
+)
 
 __all__ = [
     "NotFoundError",

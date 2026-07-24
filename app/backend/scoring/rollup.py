@@ -27,9 +27,17 @@ from ..models.weights import (
     MONITOR_MIN_FINAL,
     VALIDATE_MIN_FINAL,
 )
+from . import (
+    control_feasibility,
+    data_quality,
+    early_signal,
+    painpoint,
+    revenue,
+    rm_actionability,
+    strategic_fit,
+)
 from .builder import build_sub_score
 from .context import ScoringContext, clamp
-from . import control_feasibility, data_quality, early_signal, painpoint, revenue, rm_actionability, strategic_fit
 
 _SUB_SCORE_MODULES = {
     "revenue_potential": revenue,

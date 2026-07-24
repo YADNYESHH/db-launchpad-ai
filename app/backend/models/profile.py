@@ -1,5 +1,4 @@
 from datetime import date, datetime, timezone
-from typing import Optional
 
 from pydantic import BaseModel, Field, field_validator, model_validator
 
@@ -21,7 +20,7 @@ class StartupProfile(BaseModel):
     growth_stage: str
     funding_stage: str
     annual_revenue_eur: float
-    expansion_timeline_months: Optional[int] = None
+    expansion_timeline_months: int | None = None
     synthetic_flag: bool = True
     data_source_type: DataSourceType = DataSourceType.SYNTHETIC
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
@@ -51,7 +50,7 @@ class ExpansionSignal(BaseModel):
     startup_id: str
     signal_type: str  # e.g. new_country_launch, international_hiring, foreign_customer_growth,
     # supplier_expansion, funding_event
-    country: Optional[str] = None
+    country: str | None = None
     signal_date: date
     source_type: DataSourceType
     source_label: str

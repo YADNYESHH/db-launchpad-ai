@@ -9,6 +9,7 @@ from ..llm.guardrails import scan_for_banned_phrases
 from ..llm.vertex_client import generate_narrative
 from ..models import (
     ApprovalStatus,
+    ConfidenceBand,
     ExpansionSignal,
     PainPointProfile,
     PaymentProfile,
@@ -16,6 +17,12 @@ from ..models import (
     RecommendationRecord,
     ScoreRecord,
     StartupProfile,
+)
+from .validation import (
+    check_data_freshness,
+    check_source_credibility,
+    find_duplicate_signals,
+    validate_recommendation_output,
 )
 
 _PRODUCT_THEMES_BY_FLAG = {
@@ -80,15 +87,47 @@ def _build_product_themes(pain: PainPointProfile | None) -> list[str]:
     return themes
 
 
-def _build_caveats(score_record: ScoreRecord) -> list[str]:
+def _build_caveats(score_record: ScoreRecord, signals: list[ExpansionSignal]) -> list[str]:
     caveats = []
     if score_record.missing_data_flags:
         caveats.append(f"Missing or incomplete data for: {', '.join(score_record.missing_data_flags)}.")
     weakest = min(score_record.sub_scores, key=lambda s: s.score_value)
     if weakest.score_value < 60:
-        caveats.append(f"{weakest.sub_score_type.replace('_', ' ').title()} is comparatively weak ({weakest.score_value:.0f}/100) and should be validated with the client.")
+        label = weakest.sub_score_type.replace("_", " ").title()
+        caveats.append(
+            f"{label} is comparatively weak ({weakest.score_value:.0f}/100) and should be validated with the client."
+        )
+
+    # Self-validation performed by this stage before handing the brief to an
+    # RM: source credibility, freshness, and duplicate/redundant evidence.
+    credibility_issue = check_source_credibility(signals)
+    if credibility_issue:
+        caveats.append(credibility_issue)
+    freshness_issue = check_data_freshness(signals, as_of=datetime.now(timezone.utc).date())
+    if freshness_issue:
+        caveats.append(freshness_issue)
+    caveats.extend(find_duplicate_signals(signals))
+
     caveats.append("All data used is synthetic and has not been validated against real client records.")
     return caveats
+
+
+def _determine_evidence_confidence(
+    score_record: ScoreRecord, signals: list[ExpansionSignal]
+) -> ConfidenceBand:
+    """Rolls up evidence quality into one exec-facing confidence band,
+    combining the data-quality sub-score's own confidence with the
+    source-credibility and freshness checks performed above."""
+    data_quality = next(
+        (s for s in score_record.sub_scores if s.sub_score_type == "data_availability_explainability"), None
+    )
+    if data_quality is not None and data_quality.confidence_band == ConfidenceBand.LOW:
+        return ConfidenceBand.LOW
+    if check_source_credibility(signals) or check_data_freshness(signals, as_of=datetime.now(timezone.utc).date()):
+        return ConfidenceBand.LOW
+    if data_quality is not None and data_quality.confidence_band == ConfidenceBand.MEDIUM:
+        return ConfidenceBand.MEDIUM
+    return ConfidenceBand.HIGH
 
 
 def generate_recommendation(
@@ -162,10 +201,21 @@ def generate_recommendation(
         ],
         suggested_questions=_build_suggested_questions(pain),
         product_themes=_build_product_themes(pain),
-        caveats=_build_caveats(score_record),
+        caveats=_build_caveats(score_record, signals),
         approval_status=approval_status,
         generated_at=datetime.now(timezone.utc),
         llm_used=llm_used,
         guardrail_flags=guardrail_flags,
+        evidence_confidence=_determine_evidence_confidence(score_record, signals),
     )
+
+    # Output validation: this stage never hands off an incomplete brief. If a
+    # problem is found (should be unreachable given the construction above,
+    # but defended anyway), the brief is force-downgraded to
+    # validation_required rather than silently released as a draft.
+    problems = validate_recommendation_output(recommendation)
+    if problems:
+        recommendation.approval_status = ApprovalStatus.VALIDATION_REQUIRED
+        recommendation.validation_notes = problems
+
     return recommendation, None

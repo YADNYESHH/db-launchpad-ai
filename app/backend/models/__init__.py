@@ -1,5 +1,12 @@
 from .audit import AuditEvent
-from .enums import ApprovalStatus, ConfidenceBand, DataSourceType, PriorityBand, Role, SUB_SCORE_TYPES
+from .enums import (
+    SUB_SCORE_TYPES,
+    ApprovalStatus,
+    ConfidenceBand,
+    DataSourceType,
+    PriorityBand,
+    Role,
+)
 from .profile import ExpansionSignal, PainPointProfile, PaymentProfile, StartupProfile
 from .recommendation import BANNED_PHRASES, STANDARD_NON_CLAIMS, RecommendationRecord
 from .scoring import DriverScore, ScoreRecord, SubScore
@@ -7,22 +14,22 @@ from .user import User, UserPublic
 from .weights import WeightConfig, default_weight_config
 
 __all__ = [
-    "AuditEvent",
+    "BANNED_PHRASES",
+    "STANDARD_NON_CLAIMS",
+    "SUB_SCORE_TYPES",
     "ApprovalStatus",
+    "AuditEvent",
     "ConfidenceBand",
     "DataSourceType",
-    "PriorityBand",
-    "Role",
-    "SUB_SCORE_TYPES",
+    "DriverScore",
     "ExpansionSignal",
     "PainPointProfile",
     "PaymentProfile",
-    "StartupProfile",
-    "BANNED_PHRASES",
-    "STANDARD_NON_CLAIMS",
+    "PriorityBand",
     "RecommendationRecord",
-    "DriverScore",
+    "Role",
     "ScoreRecord",
+    "StartupProfile",
     "SubScore",
     "User",
     "UserPublic",

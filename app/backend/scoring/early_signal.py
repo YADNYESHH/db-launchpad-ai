@@ -4,7 +4,7 @@ Signal-based drivers: absence of *that specific signal type* is a genuine,
 valid low score (not missing data). Only a fully empty `ctx.signals` list
 (no signal ingestion happened at all) is treated as missing data.
 """
-from .context import ScoringContext, DriverResult, clamp
+from .context import DriverResult, ScoringContext, clamp
 
 
 def _avg_confidence(ctx: ScoringContext, signal_type: str) -> float:

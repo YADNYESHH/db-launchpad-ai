@@ -1,5 +1,4 @@
 from datetime import datetime, timezone
-from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -128,7 +127,7 @@ class WeightConfig(BaseModel):
     version_id: str
     owner: str
     created_date: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    approved_date: Optional[datetime] = None
+    approved_date: datetime | None = None
     active: bool = True
     change_reason: str = "Initial version transcribed from LaunchPad AI concept document."
     sub_score_driver_tables: dict[str, list[DriverWeight]] = Field(

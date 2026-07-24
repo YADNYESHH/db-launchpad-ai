@@ -40,6 +40,6 @@ def generate_narrative(prompt: str) -> tuple[str | None, bool]:
         if not text:
             return None, False
         return text, True
-    except Exception:  # noqa: BLE001 - any Vertex failure must degrade gracefully
+    except Exception:
         logger.warning("Vertex AI narrative generation failed; falling back to deterministic template.", exc_info=True)
         return None, False

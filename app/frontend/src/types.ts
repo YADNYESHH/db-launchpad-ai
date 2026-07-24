@@ -122,6 +122,8 @@ export interface RecommendationRecord {
   generated_at: string
   llm_used: boolean
   guardrail_flags: string[]
+  evidence_confidence: 'high' | 'medium' | 'low'
+  validation_notes: string[]
 }
 
 export interface AuditEvent {

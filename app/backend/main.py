@@ -1,6 +1,5 @@
 import logging
 import os
-import uuid
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 
@@ -11,7 +10,7 @@ from fastapi.staticfiles import StaticFiles
 
 from .auth.deps import get_current_user, require_roles
 from .auth.security import TokenPayload, create_access_token, verify_password
-from .models import ApprovalStatus, Role, UserPublic
+from .models import Role, UserPublic
 from .models.api import (
     CreateProfileRequest,
     DecideRecommendationRequest,
@@ -19,10 +18,18 @@ from .models.api import (
     ProfileBundle,
     ProposeWeightConfigRequest,
 )
-from .orchestrator import NotFoundError, decide_recommendation, ensure_weight_config, run_recommendation, run_scoring
+from .orchestrator import (
+    NotFoundError,
+    decide_recommendation,
+    ensure_weight_config,
+    run_recommendation,
+    run_scoring,
+)
 from .orchestrator.audit import log_event
-from .seed.data import DEFAULT_WEIGHT_CONFIG, DEMO_USERS
+from .orchestrator.validation import find_duplicate_profile
 from .seed.data import (
+    DEFAULT_WEIGHT_CONFIG,
+    DEMO_USERS,
     NOVATRADE_ID,
     NOVATRADE_PAIN_POINT_PROFILE,
     NOVATRADE_PAYMENT_PROFILE,
@@ -59,9 +66,20 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="LaunchPad AI", version="1.0.0", lifespan=lifespan)
 
+# The deployed app serves its frontend from the same origin as its API, so
+# browser-based use in production never needs cross-origin access at all.
+# CORS is only for local development (Vite dev server on a different port)
+# and any explicitly deployed frontend origins - never a bare wildcard.
+_DEFAULT_ALLOWED_ORIGINS = "http://localhost:5173,http://127.0.0.1:5173"
+_allowed_origins = [
+    origin.strip()
+    for origin in os.environ.get("ALLOWED_ORIGINS", _DEFAULT_ALLOWED_ORIGINS).split(",")
+    if origin.strip()
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # demo/hackathon scope; tighten before any real production use
+    allow_origins=_allowed_origins,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -98,6 +116,17 @@ def create_profile(
     current: TokenPayload = Depends(require_roles(Role.RM, Role.PRODUCT_OWNER)),
 ):
     store = get_store()
+
+    duplicate = find_duplicate_profile(store.list_profiles(), req.profile)
+    if duplicate is not None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=(
+                f"A profile named '{duplicate.name}' in {duplicate.hq_country} already exists "
+                f"as startup_id={duplicate.startup_id}. Use that profile instead of creating a duplicate."
+            ),
+        )
+
     store.save_profile(req.profile)
     if req.payment:
         store.save_payment_profile(req.payment)

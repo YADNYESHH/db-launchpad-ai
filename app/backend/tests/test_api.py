@@ -87,6 +87,30 @@ def test_full_rm_workflow_novatrade_end_to_end():
     assert "recommendation_approved" in event_types
 
 
+def test_duplicate_profile_is_rejected():
+    po_token = _login("priya.nair@launchpad.demo")
+    payload = {
+        "profile": {
+            "startup_id": "ST-DUP-1",
+            "name": "Duplicate Test GmbH",
+            "sector": "Test",
+            "hq_country": "Austria",
+            "growth_stage": "Seed",
+            "funding_stage": "Seed",
+            "annual_revenue_eur": 1000,
+        }
+    }
+    resp = client.post("/profiles", json=payload, headers=_auth(po_token))
+    assert resp.status_code == 201
+
+    payload2 = dict(payload)
+    payload2["profile"] = dict(payload["profile"])
+    payload2["profile"]["startup_id"] = "ST-DUP-2"  # different id, same name+country
+    resp2 = client.post("/profiles", json=payload2, headers=_auth(po_token))
+    assert resp2.status_code == 409
+    assert "ST-DUP-1" in resp2.json()["detail"]
+
+
 def test_recommendation_cannot_be_generated_without_prior_score():
     rm_token = _login("anna.schmidt@launchpad.demo")
     po_token = _login("priya.nair@launchpad.demo")

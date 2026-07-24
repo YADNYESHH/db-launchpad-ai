@@ -4,7 +4,7 @@ This 5-driver table is our documented gap-fill for a sub-score the concept
 document names and weights (§21, §23.3) but does not publish a full 100-point
 breakdown for — see the header comment in models/weights.py.
 """
-from .context import ScoringContext, DriverResult, clamp
+from .context import DriverResult, ScoringContext, clamp
 
 _RECOGNISED_JURISDICTIONS = {
     "germany", "austria", "netherlands", "singapore", "united kingdom",

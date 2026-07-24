@@ -10,7 +10,7 @@ document's own Recommendation 7 ("use RM feedback ... to calibrate weights
 over time"). They are pure functions of `ctx`: identical input always yields
 an identical score.
 """
-from .context import ScoringContext, DriverResult, clamp
+from .context import DriverResult, ScoringContext, clamp
 
 # Benchmark ceilings (score reaches 100 at or above these values), calibrated
 # to the document's explicitly targeted segment — "SME, MidCap and scaleup"

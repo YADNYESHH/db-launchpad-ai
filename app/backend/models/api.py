@@ -1,6 +1,5 @@
 """Request/response wrapper models used only by the FastAPI layer (main.py) —
 kept separate from the domain models in this package's other modules."""
-from typing import Optional
 
 from pydantic import BaseModel
 
@@ -11,15 +10,15 @@ from .weights import DriverWeight
 
 class CreateProfileRequest(BaseModel):
     profile: StartupProfile
-    payment: Optional[PaymentProfile] = None
-    pain: Optional[PainPointProfile] = None
+    payment: PaymentProfile | None = None
+    pain: PainPointProfile | None = None
     signals: list[ExpansionSignal] = []
 
 
 class ProfileBundle(BaseModel):
     profile: StartupProfile
-    payment: Optional[PaymentProfile] = None
-    pain: Optional[PainPointProfile] = None
+    payment: PaymentProfile | None = None
+    pain: PainPointProfile | None = None
     signals: list[ExpansionSignal] = []
 
 
@@ -33,6 +32,6 @@ class DecideRecommendationRequest(BaseModel):
 
 
 class ProposeWeightConfigRequest(BaseModel):
-    sub_score_driver_tables: Optional[dict[str, list[DriverWeight]]] = None
-    final_rollup_weights: Optional[dict[str, float]] = None
+    sub_score_driver_tables: dict[str, list[DriverWeight]] | None = None
+    final_rollup_weights: dict[str, float] | None = None
     change_reason: str

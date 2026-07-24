@@ -11,6 +11,7 @@ on:
 
 env:
   PROJECT_ID: ${{ vars.PROJECT_ID }}
+  PROJECT_NUMBER: ${{ vars.PROJECT_NUMBER }}
   REGION: europe-west1
   SERVICE_NAME: launchpad-ai
   REPOSITORY: launchpad-ai
@@ -25,12 +26,30 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Secret scanning runs over the whole repo, not just app/, and never
+      # blocks the pipeline on its own - a scanner hiccup should not be
+      # confused with an actual leaked credential.
+      - name: Secret scan (gitleaks)
+        uses: gitleaks/gitleaks-action@v2
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
       - name: Install backend dependencies
         run: pip install -r requirements.txt
+
+      - name: Lint backend (ruff)
+        run: pip install ruff && ruff check backend
+
+      - name: Dependency vulnerability scan (backend)
+        run: |
+          pip install pip-audit
+          pip-audit -r requirements.txt || echo "::warning::pip-audit found issues - see log above; review before relying on this build for anything beyond the hackathon demo."
+        continue-on-error: true
 
       - name: Run backend test suite (deterministic scoring, validation, API, RBAC)
         run: STORE_BACKEND=memory python -m pytest backend/tests -v
@@ -41,11 +60,22 @@ jobs:
           cache: "npm"
           cache-dependency-path: app/frontend/package-lock.json
 
+      - name: Install frontend dependencies
+        working-directory: app/frontend
+        run: npm ci
+
+      - name: Lint frontend
+        working-directory: app/frontend
+        run: npm run lint
+
+      - name: Dependency vulnerability scan (frontend)
+        working-directory: app/frontend
+        run: npm audit --audit-level=high
+        continue-on-error: true
+
       - name: Build frontend (typecheck + bundle)
         working-directory: app/frontend
-        run: |
-          npm ci
-          npm run build
+        run: npm run build
 
   deploy:
     needs: test
@@ -84,6 +114,13 @@ jobs:
             gcloud firestore databases create --project="${PROJECT_ID}" --location=eur3 --type=firestore-native
           fi
 
+      - name: Ensure JWT signing secret exists (created once, never regenerated)
+        run: |
+          if ! gcloud secrets describe launchpad-jwt-secret --project="${PROJECT_ID}" >/dev/null 2>&1; then
+            openssl rand -hex 32 | gcloud secrets create launchpad-jwt-secret \
+              --project="${PROJECT_ID}" --replication-policy=automatic --data-file=-
+          fi
+
       - name: Configure Docker for Artifact Registry
         run: gcloud auth configure-docker "${REGION}-docker.pkg.dev"
 
@@ -103,14 +140,17 @@ jobs:
         id: deploy
         run: |
           set -e
-          JWT_SECRET_KEY=$(openssl rand -hex 32)
+          # Allowed CORS origins: the service's own two default hostnames
+          # (browser use is same-origin against either) plus local dev.
+          ALLOWED_ORIGINS="https://${SERVICE_NAME}-${PROJECT_NUMBER}.${REGION}.run.app,http://localhost:5173,http://127.0.0.1:5173"
           gcloud run deploy "${SERVICE_NAME}" \
             --image "${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPOSITORY}/${SERVICE_NAME}:${{ github.sha }}" \
             --region "${REGION}" \
             --project "${PROJECT_ID}" \
             --service-account "${WORKLOAD_SA_EMAIL}" \
             --allow-unauthenticated \
-            --set-env-vars "STORE_BACKEND=firestore,PROJECT_ID=${PROJECT_ID},VERTEX_LOCATION=${REGION},JWT_SECRET_KEY=${JWT_SECRET_KEY}"
+            --set-env-vars "STORE_BACKEND=firestore,PROJECT_ID=${PROJECT_ID},VERTEX_LOCATION=${REGION},ALLOWED_ORIGINS=${ALLOWED_ORIGINS}" \
+            --set-secrets "JWT_SECRET_KEY=launchpad-jwt-secret:latest"
 
           url=$(gcloud run services describe "${SERVICE_NAME}" --region "${REGION}" --project "${PROJECT_ID}" --format="value(status.url)")
           echo "url=${url}" >> "${GITHUB_OUTPUT}"

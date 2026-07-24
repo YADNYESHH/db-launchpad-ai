@@ -2,7 +2,6 @@
 Collections: profiles, payment_profiles, pain_point_profiles, signals,
 score_records, recommendations, audit_log, weight_configs, users.
 """
-from typing import Optional
 
 from google.cloud import firestore
 
@@ -27,7 +26,7 @@ class FirestoreStore(Store):
     def save_profile(self, profile: StartupProfile) -> None:
         self._db.collection("profiles").document(profile.startup_id).set(profile.model_dump(mode="json"))
 
-    def get_profile(self, startup_id: str) -> Optional[StartupProfile]:
+    def get_profile(self, startup_id: str) -> StartupProfile | None:
         doc = self._db.collection("profiles").document(startup_id).get()
         return StartupProfile.model_validate(doc.to_dict()) if doc.exists else None
 
@@ -37,14 +36,14 @@ class FirestoreStore(Store):
     def save_payment_profile(self, payment: PaymentProfile) -> None:
         self._db.collection("payment_profiles").document(payment.startup_id).set(payment.model_dump(mode="json"))
 
-    def get_payment_profile(self, startup_id: str) -> Optional[PaymentProfile]:
+    def get_payment_profile(self, startup_id: str) -> PaymentProfile | None:
         doc = self._db.collection("payment_profiles").document(startup_id).get()
         return PaymentProfile.model_validate(doc.to_dict()) if doc.exists else None
 
     def save_pain_point_profile(self, pain: PainPointProfile) -> None:
         self._db.collection("pain_point_profiles").document(pain.startup_id).set(pain.model_dump(mode="json"))
 
-    def get_pain_point_profile(self, startup_id: str) -> Optional[PainPointProfile]:
+    def get_pain_point_profile(self, startup_id: str) -> PainPointProfile | None:
         doc = self._db.collection("pain_point_profiles").document(startup_id).get()
         return PainPointProfile.model_validate(doc.to_dict()) if doc.exists else None
 
@@ -62,11 +61,11 @@ class FirestoreStore(Store):
     def save_score_record(self, record: ScoreRecord, score_id: str) -> None:
         self._db.collection("score_records").document(score_id).set(record.model_dump(mode="json"))
 
-    def get_score_record(self, score_id: str) -> Optional[ScoreRecord]:
+    def get_score_record(self, score_id: str) -> ScoreRecord | None:
         doc = self._db.collection("score_records").document(score_id).get()
         return ScoreRecord.model_validate(doc.to_dict()) if doc.exists else None
 
-    def get_latest_score_record(self, startup_id: str) -> Optional[tuple[str, ScoreRecord]]:
+    def get_latest_score_record(self, startup_id: str) -> tuple[str, ScoreRecord] | None:
         # Sorted in Python rather than via Firestore order_by: a where() +
         # order_by() on different fields needs a composite index to be
         # created ahead of time (a manual provisioning step we want to avoid
@@ -80,7 +79,7 @@ class FirestoreStore(Store):
     def save_recommendation(self, rec: RecommendationRecord) -> None:
         self._db.collection("recommendations").document(rec.recommendation_id).set(rec.model_dump(mode="json"))
 
-    def get_recommendation(self, recommendation_id: str) -> Optional[RecommendationRecord]:
+    def get_recommendation(self, recommendation_id: str) -> RecommendationRecord | None:
         doc = self._db.collection("recommendations").document(recommendation_id).get()
         return RecommendationRecord.model_validate(doc.to_dict()) if doc.exists else None
 
@@ -96,17 +95,17 @@ class FirestoreStore(Store):
     def save_weight_config(self, config: WeightConfig) -> None:
         self._db.collection("weight_configs").document(config.version_id).set(config.model_dump(mode="json"))
 
-    def get_active_weight_config(self) -> Optional[WeightConfig]:
+    def get_active_weight_config(self) -> WeightConfig | None:
         query = self._db.collection("weight_configs").where("active", "==", True)
         configs = [WeightConfig.model_validate(d.to_dict()) for d in query.stream()]
         if not configs:
             return None
-        return sorted(configs, key=lambda c: c.created_date)[-1]
+        return max(configs, key=lambda c: c.created_date)
 
     def list_weight_configs(self) -> list[WeightConfig]:
         return [WeightConfig.model_validate(d.to_dict()) for d in self._db.collection("weight_configs").stream()]
 
-    def get_user_by_email(self, email: str) -> Optional[User]:
+    def get_user_by_email(self, email: str) -> User | None:
         doc = self._db.collection("users").document(email).get()
         return User.model_validate(doc.to_dict()) if doc.exists else None
 

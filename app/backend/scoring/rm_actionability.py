@@ -1,5 +1,5 @@
 """RM Actionability driver functions (doc pp. 19-20)."""
-from .context import ScoringContext, DriverResult, clamp
+from .context import DriverResult, ScoringContext, clamp
 
 
 def clarity_of_next_best_action(ctx: ScoringContext) -> DriverResult:

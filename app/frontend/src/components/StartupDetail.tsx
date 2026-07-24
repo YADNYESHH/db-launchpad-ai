@@ -4,6 +4,7 @@ import type { AuditEvent, ProfileBundle, RecommendationRecord, Role, ScoreRecord
 import ScoreCard from './ScoreCard'
 import RecommendationPanel from './RecommendationPanel'
 import AuditTrail from './AuditTrail'
+import SummaryStrip from './SummaryStrip'
 
 type Tab = 'overview' | 'scorecard' | 'recommendation' | 'audit'
 
@@ -82,6 +83,8 @@ export default function StartupDetail({ startupId, role }: { startupId: string; 
           )}
         </div>
       </div>
+
+      {score && <SummaryStrip score={score} recommendation={recommendation} />}
 
       <nav className="tabs">
         <button className={tab === 'overview' ? 'active' : ''} onClick={() => setTab('overview')}>

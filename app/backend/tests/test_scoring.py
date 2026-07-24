@@ -9,7 +9,7 @@ def test_scoring_is_deterministic(novatrade_ctx):
     r2 = score_startup(novatrade_ctx)
     assert r1.final_score == r2.final_score
     assert r1.priority_band == r2.priority_band
-    for s1, s2 in zip(r1.sub_scores, r2.sub_scores):
+    for s1, s2 in zip(r1.sub_scores, r2.sub_scores, strict=True):
         assert s1.score_value == s2.score_value
         assert s1.driver_scores == s2.driver_scores
 
