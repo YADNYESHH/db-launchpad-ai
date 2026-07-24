@@ -201,6 +201,12 @@ class _GroundedModel:
     production). We try each candidate region until one succeeds.
     """
 
+    def __init__(self) -> None:
+        # Populated by generate_content so callers (e.g. diagnostics) can report
+        # which region actually served the request, or which was tried last.
+        self.success_region: str | None = None
+        self.last_region: str | None = None
+
     def generate_content(self, prompt: str):
         from google import genai
         from google.genai import types
@@ -211,11 +217,14 @@ class _GroundedModel:
         )
         last_exc: Exception | None = None
         for loc in _grounding_locations():
+            self.last_region = loc
             try:
                 client = genai.Client(vertexai=True, project=_PROJECT_ID, location=loc)
-                return client.models.generate_content(
+                response = client.models.generate_content(
                     model=_MODEL_NAME, contents=prompt, config=config
                 )
+                self.success_region = loc
+                return response
             except Exception as exc:  # noqa: BLE001 - try the next region
                 last_exc = exc
                 logger.warning("Grounded generation failed in region %s.", loc, exc_info=True)
@@ -230,21 +239,101 @@ def _get_grounded_model():
 
 def _collect_citations(response) -> list[str]:
     """Best-effort extraction of the real source URLs the grounded search used.
-    Grounding metadata shape varies across SDK versions, so this is defensive."""
+    Grounding metadata shape varies across SDK versions, so this is defensive.
+
+    Primary shape (google-genai): ``response.candidates[i].grounding_metadata
+    .grounding_chunks[j].web.uri``. We also defensively scan ``grounding_supports``
+    for any nested web URIs so a slightly different SDK shape still yields
+    citations rather than silently returning none."""
     urls: list[str] = []
+
+    def _add(uri) -> None:
+        if isinstance(uri, str) and uri and uri not in urls:
+            urls.append(uri)
+
     try:
         for candidate in getattr(response, "candidates", []) or []:
             meta = getattr(candidate, "grounding_metadata", None)
             if not meta:
                 continue
+            # Primary: grounding_chunks[].web.uri
             for chunk in getattr(meta, "grounding_chunks", []) or []:
                 web = getattr(chunk, "web", None)
-                uri = getattr(web, "uri", None) if web else None
-                if uri and uri not in urls:
-                    urls.append(uri)
+                _add(getattr(web, "uri", None) if web else None)
+            # Defensive: grounding_supports[] may carry nested web references
+            # in some SDK builds; pull any uri we can find without raising.
+            for support in getattr(meta, "grounding_supports", []) or []:
+                web = getattr(support, "web", None)
+                _add(getattr(web, "uri", None) if web else None)
     except Exception:  # noqa: BLE001 - citation extraction must never break discovery
         logger.warning("Could not extract grounding citations.", exc_info=True)
     return urls
+
+
+def diagnose_discovery(sector: str = "cross-border payments") -> dict:
+    """Attempt ONE real grounded generation and return a structured, SAFE
+    diagnostic that SURFACES the real error instead of swallowing it.
+
+    Unlike ``discover_startups`` (which degrades gracefully to a reason string),
+    this reports exactly what happened: which region succeeded, or the type and
+    (truncated) message of the last failure. It NEVER raises and NEVER includes
+    credentials or tokens — only the exception type/message and a short preview
+    of the model text.
+
+    Returns a dict of the shape::
+
+        {
+          "ok": bool,
+          "region": str | None,          # region that succeeded, else None
+          "model": str,                  # model name attempted
+          "error_type": str | None,      # exception class name of last failure
+          "error_message": str | None,   # truncated to 500 chars
+          "has_text": bool,              # model returned non-empty text
+          "num_citations": int,          # grounding citations extracted
+          "raw_preview": str | None,     # first 300 chars of model text
+        }
+    """
+    result: dict = {
+        "ok": False,
+        "region": None,
+        "model": _MODEL_NAME,
+        "error_type": None,
+        "error_message": None,
+        "has_text": False,
+        "num_citations": 0,
+        "raw_preview": None,
+    }
+
+    # Obtain the grounded model through the same factory discover_startups uses,
+    # so this diagnostic exercises (and tests can stub) exactly that seam.
+    try:
+        model = _get_grounded_model()
+    except Exception as exc:  # noqa: BLE001 - init/env issues must be reported, not raised
+        result["error_type"] = type(exc).__name__
+        result["error_message"] = str(exc)[:500]
+        return result
+
+    prompt = _DISCOVERY_PROMPT_TEMPLATE.format(
+        n=1, sector=(sector or "").strip() or "cross-border payments"
+    )
+    try:
+        response = model.generate_content(prompt)
+    except Exception as exc:  # noqa: BLE001 - SURFACE the real (last) failure, never raise
+        result["region"] = getattr(model, "last_region", None)
+        result["error_type"] = type(exc).__name__
+        result["error_message"] = str(exc)[:500]
+        return result
+
+    text = (getattr(response, "text", None) or "").strip()
+    citations = _collect_citations(response)
+    result.update(
+        ok=True,
+        region=getattr(model, "success_region", None),
+        has_text=bool(text),
+        num_citations=len(citations),
+        raw_preview=text[:300] if text else None,
+    )
+    return result
 
 
 def discover_startups(sector: str, limit: int = 4) -> tuple[list[DiscoveredStartup], str | None]:
@@ -264,9 +353,11 @@ def discover_startups(sector: str, limit: int = 4) -> tuple[list[DiscoveredStart
     try:
         response = model.generate_content(prompt)
         raw = (response.text or "").strip()
-    except Exception:  # noqa: BLE001
+    except Exception as e:  # noqa: BLE001
         logger.warning("Discovery failed during model call.", exc_info=True)
-        return [], "Live discovery call failed; the synthetic example remains available."
+        # Surface a short, safe form of the real exception so the failure is
+        # debuggable while still degrading gracefully (no credentials leaked).
+        return [], f"Live discovery call failed: {type(e).__name__}: {str(e)[:160]}"
 
     citations = _collect_citations(response)
 

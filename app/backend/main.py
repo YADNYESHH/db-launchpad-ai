@@ -10,6 +10,7 @@ from fastapi.staticfiles import StaticFiles
 
 from .auth.deps import get_current_user, require_roles
 from .auth.security import TokenPayload, create_access_token, verify_password
+from .discovery.agent import diagnose_discovery
 from .discovery.seed_live import seed_live_portfolio
 from .models import Role, UserPublic
 from .models.api import (
@@ -140,7 +141,12 @@ def health():
     # Not served at /healthz: that exact path was observed to be intercepted
     # ahead of this app (a Google-branded 404, not ours) on this project's
     # Cloud Run *.run.app domain, while every other path routes correctly.
-    return {"status": "healthy", "service": "launchpad-ai", "synthetic_only": True}
+    return {
+        "status": "healthy",
+        "service": "launchpad-ai",
+        "synthetic_only": True,
+        "version": os.getenv("BUILD_SHA", "dev"),
+    }
 
 
 # ---------------------------------------------------------------- auth -----
@@ -302,6 +308,17 @@ def seed_portfolio_endpoint(
     result = seed_live_portfolio(store, actor=current.user_id, sectors=sectors, per_sector=per_sector)
     return {**result, "total_profiles": len(store.list_profiles())}
 
+
+
+@app.get("/discovery/diagnostics")
+def discovery_diagnostics(
+    current: TokenPayload = Depends(require_roles(Role.ADMIN)),
+):
+    """Admin-only: run ONE real grounded generation and return a structured,
+    SAFE diagnostic that surfaces the real error (type + truncated message) or
+    the region that succeeded. Lets an admin see why live discovery is failing
+    in production without swallowing the error. Never raises; leaks no creds."""
+    return diagnose_discovery()
 
 
 @app.post("/profiles/{startup_id}/score")

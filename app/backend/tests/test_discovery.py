@@ -273,3 +273,67 @@ def test_discover_startups_omitted_optional_keys_use_defaults(monkeypatch):
     assert only.funding_amount_eur is None
     assert only.payment_corridors == []
 
+
+# ---------------------------------------------------------------------------
+# diagnose_discovery tests (yadnyesh): the admin-facing diagnostic must SURFACE
+# the real error on failure and report citations/text on success, all without
+# any real network / LLM calls. We stub the same `_get_grounded_model` seam the
+# other tests use so no google-genai client is ever constructed.
+# ---------------------------------------------------------------------------
+
+from ..discovery.agent import diagnose_discovery  # noqa: E402
+
+
+def test_diagnose_discovery_reports_error_without_raising(monkeypatch):
+    def _boom():
+        raise RuntimeError("google_search tool not supported: token=SECRET_SHOULD_NOT_LEAK")
+
+    monkeypatch.setattr(_agent, "_get_grounded_model", _boom)
+
+    diag = diagnose_discovery("cross-border payments")
+
+    assert diag["ok"] is False
+    assert diag["error_type"] == "RuntimeError"
+    assert diag["error_message"] is not None
+    assert "google_search tool not supported" in diag["error_message"]
+    assert len(diag["error_message"]) <= 500
+    assert diag["has_text"] is False
+    assert diag["num_citations"] == 0
+    assert diag["raw_preview"] is None
+    assert diag["model"] == _agent._MODEL_NAME
+
+
+def test_diagnose_discovery_reports_error_when_generation_raises(monkeypatch):
+    # Factory succeeds but the grounded call itself raises: still surfaced, never raised.
+    stub = SimpleNamespace(
+        generate_content=lambda _p: (_ for _ in ()).throw(ValueError("region exhausted")),
+        last_region="us-central1",
+    )
+    monkeypatch.setattr(_agent, "_get_grounded_model", lambda: stub)
+
+    diag = diagnose_discovery("cross-border payments")
+
+    assert diag["ok"] is False
+    assert diag["error_type"] == "ValueError"
+    assert "region exhausted" in diag["error_message"]
+    assert diag["region"] == "us-central1"
+
+
+def test_diagnose_discovery_reports_success_with_citations(monkeypatch):
+    canned = _fake_response(
+        '[{"name": "PayCross GmbH"}]',
+        uris=["https://example.com/a", "https://example.com/b"],
+    )
+    _patch_model(monkeypatch, canned)
+
+    diag = diagnose_discovery("cross-border payments")
+
+    assert diag["ok"] is True
+    assert diag["error_type"] is None
+    assert diag["error_message"] is None
+    assert diag["has_text"] is True
+    assert diag["num_citations"] == 2
+    assert diag["raw_preview"].startswith('[{"name": "PayCross GmbH"}]')
+
+
+
