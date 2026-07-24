@@ -181,14 +181,19 @@ _WORKING_COMBO: tuple[str, str] | None = None
 
 def _candidate_models() -> list[str]:
     """Model IDs to try, in order, de-duplicated. The hackathon platform serves
-    ``gemini-2.5-flash`` (see GCP_SERVICE_ACCOUNTS.md, confirmed live). Both
-    ``gemini-2.0-flash`` and ``gemini-flash-latest`` are deliberately NOT in
-    this list: both were confirmed live (via /discovery/diagnostics) to 404 as
-    "Publisher model ... was not found" on this project, so every attempt
-    against them was pure wasted latency (a real contributor to live discovery
-    appearing to hang - see ATTEMPT_TIMEOUT_SECONDS below for the other half
-    of that fix)."""
-    ordered = [_MODEL_NAME, "gemini-2.5-flash", "gemini-2.5-pro"]
+    ``gemini-2.5-flash`` (see GCP_SERVICE_ACCOUNTS.md, confirmed live). Three
+    models are deliberately EXCLUDED, each for a reason confirmed live via
+    /discovery/diagnostics' per-attempt trace:
+      - ``gemini-2.0-flash`` / ``gemini-flash-latest``: 404 "Publisher model ...
+        was not found" on this project - pure wasted latency.
+      - ``gemini-2.5-pro``: for a GROUNDED call (Google Search tool + JSON
+        synthesis) it is consistently too slow - it never returned within the
+        per-attempt cap and only ever added ~25-55s of dead wait after flash.
+        Flash is the right tool for grounded discovery here; pro is not.
+    That leaves a single model, tried once, given a generous timeout (see
+    ATTEMPT_TIMEOUT_SECONDS) - the highest-odds single shot rather than a slow
+    matrix of losing attempts."""
+    ordered = [_MODEL_NAME, "gemini-2.5-flash"]
     seen: list[str] = []
     for m in ordered:
         if m and m not in seen:
@@ -225,10 +230,17 @@ def _grounding_locations() -> list[str]:
 # real grounded search+synthesis call that is genuinely working, confirmed
 # live via a 504 DEADLINE_EXCEEDED from Google's own server (not our client
 # timeout) on the second attempt - i.e. the call needed more than 12s to
-# finish, not less. Raised to 25s so a real call has room to complete; worst
-# case with the trimmed matrix is now bounded at roughly
-# len(models) * len(locations) * ATTEMPT_TIMEOUT_SECONDS = 2 * 1 * 25 = 50s.
-ATTEMPT_TIMEOUT_SECONDS = 25
+# finish, not less. The diagnostics per-attempt trace then showed WHY 25s was
+# still failing: gemini-2.5-flash got a Google-side 504 DEADLINE_EXCEEDED at
+# 23.4s (the SERVER gave up against the ~25s deadline we passed it), i.e. a
+# real grounded search+synthesis call genuinely needs more wall-clock than
+# that. Raised to 55s so flash has room to actually complete; with the matrix
+# now trimmed to a single model x single location, worst case is one 55s
+# attempt - comfortably under Cloud Run's 300s request timeout, and this is a
+# user-initiated "populate live data" action where a ~half-minute wait for
+# real, cited companies is acceptable (and it degrades to the synthetic seed
+# if even this fails).
+ATTEMPT_TIMEOUT_SECONDS = 55
 
 
 class _GroundedModel:
