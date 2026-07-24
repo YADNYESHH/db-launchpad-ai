@@ -12,7 +12,6 @@ import pytest
 from ..llm.guardrails import scan_for_banned_phrases
 from ..models.recommendation import BANNED_PHRASES
 
-
 # --- (a) existing banned phrases still flagged ------------------------------
 
 @pytest.mark.parametrize("phrase", BANNED_PHRASES)

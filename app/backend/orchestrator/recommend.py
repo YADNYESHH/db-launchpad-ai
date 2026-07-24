@@ -5,9 +5,9 @@ rephrase prose sections — never to alter the score, band, or approval logic.
 import uuid
 from datetime import datetime, timezone
 
+from ..discovery.corroboration import assess_corroboration
 from ..llm.guardrails import scan_for_banned_phrases
 from ..llm.vertex_client import generate_narrative
-from ..discovery.corroboration import assess_corroboration
 from ..models import (
     ApprovalStatus,
     ConfidenceBand,
