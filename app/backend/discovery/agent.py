@@ -248,9 +248,17 @@ class _GroundedModel:
         self.success_model: str | None = None
         self.last_region: str | None = None
         self.last_model: str | None = None
+        # Full per-attempt trace (model, region, outcome, elapsed seconds, and a
+        # truncated error) for every combo tried in the most recent call. Lets
+        # /discovery/diagnostics show exactly what happened to EVERY attempt,
+        # not just the last one - the last-only view previously made it look
+        # like every combo 404'd when in fact only the retired ones did and the
+        # real (working) combo was separately timing out for a different reason.
+        self.attempts: list[dict] = []
 
     def generate_content(self, prompt: str):
         import concurrent.futures
+        import time
 
         from google import genai
         from google.genai import types
@@ -299,20 +307,39 @@ class _GroundedModel:
             # abandoned (Python cannot forcibly kill a thread) rather than blocking
             # the request that's waiting on an answer.
             executor = concurrent.futures.ThreadPoolExecutor(max_workers=1)
+            started = time.monotonic()
             try:
                 future = executor.submit(_call_once, model, region)
                 response = future.result(timeout=ATTEMPT_TIMEOUT_SECONDS)
                 self.success_model, self.success_region = model, region
+                self.attempts.append(
+                    {"model": model, "region": region, "outcome": "success", "elapsed_s": round(time.monotonic() - started, 1)}
+                )
                 _WORKING_COMBO = (model, region)
                 return response
             except concurrent.futures.TimeoutError as exc:
                 last_exc = exc
+                elapsed = round(time.monotonic() - started, 1)
+                self.attempts.append(
+                    {"model": model, "region": region, "outcome": "client_timeout", "elapsed_s": elapsed}
+                )
                 logger.warning(
                     "Grounded generation TIMED OUT after %ss (model=%s, region=%s).",
                     ATTEMPT_TIMEOUT_SECONDS, model, region,
                 )
             except Exception as exc:  # noqa: BLE001 - try the next model/region
                 last_exc = exc
+                elapsed = round(time.monotonic() - started, 1)
+                self.attempts.append(
+                    {
+                        "model": model,
+                        "region": region,
+                        "outcome": "error",
+                        "elapsed_s": elapsed,
+                        "error_type": type(exc).__name__,
+                        "error_message": str(exc)[:300],
+                    }
+                )
                 logger.warning(
                     "Grounded generation failed (model=%s, region=%s).", model, region, exc_info=True
                 )
@@ -393,6 +420,7 @@ def diagnose_discovery(sector: str = "cross-border payments") -> dict:
         "has_text": False,
         "num_citations": 0,
         "raw_preview": None,
+        "attempts": [],
     }
 
     # Obtain the grounded model through the same factory discover_startups uses,
@@ -414,6 +442,7 @@ def diagnose_discovery(sector: str = "cross-border payments") -> dict:
         result["model_used"] = getattr(model, "last_model", None)
         result["error_type"] = type(exc).__name__
         result["error_message"] = str(exc)[:500]
+        result["attempts"] = getattr(model, "attempts", [])
         return result
 
     text = (getattr(response, "text", None) or "").strip()
@@ -425,6 +454,7 @@ def diagnose_discovery(sector: str = "cross-border payments") -> dict:
         has_text=bool(text),
         num_citations=len(citations),
         raw_preview=text[:300] if text else None,
+        attempts=getattr(model, "attempts", []),
     )
     return result
 
