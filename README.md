@@ -76,6 +76,7 @@ al.azure.com). Use your SSO ID and the **initial password** given in your briefi
 
 **APIs:**
 The following APIs have been activated on your project. You cannot activate others.
+* agentregistry.googleapis.com
 * aiplatform.googleapis.com
 * apigateway.googleapis.com
 * appengine.googleapis.com
@@ -85,6 +86,7 @@ The following APIs have been activated on your project. You cannot activate othe
 * bigquery.googleapis.com
 * bigqueryconnection.googleapis.com
 * chat.googleapis.com
+* cloudapiregistry.googleapis.com
 * cloudasset.googleapis.com
 * cloudbuild.googleapis.com
 * clouderrorreporting.googleapis.com
@@ -107,13 +109,20 @@ The following APIs have been activated on your project. You cannot activate othe
 * firebase.googleapis.com
 * firebaseinstallations.googleapis.com
 * firestore.googleapis.com
+* iamconnectors.googleapis.com
+* iap.googleapis.com
 * language.googleapis.com
 * logging.googleapis.com
+* modelarmor.googleapis.com
 * monitoring.googleapis.com
+* networksecurity.googleapis.com
+* networkservices.googleapis.com
 * notebooks.googleapis.com
+* observability.googleapis.com
 * pubsub.googleapis.com
 * retail.googleapis.com
 * run.googleapis.com
+* saasservicemgmt.googleapis.com
 * secretmanager.googleapis.com
 * servicemanagement.googleapis.com
 * serviceusage.googleapis.com
@@ -171,8 +180,9 @@ Every team member has the following roles at the project level:
 * roles/datastore.owner
 * roles/datastudio.viewer
 * roles/developerconnect.admin
+* roles/developerconnect.oauthUser
 * roles/dialogflow.admin
-* roles/discoveryengine.admin
+* roles/discoveryengine.editor
 * roles/discoveryengine.notebookOwner
 * roles/documentai.editor
 * roles/errorreporting.admin
@@ -233,10 +243,11 @@ Workload SA (`workload@hack-team-toruk-makto.iam.gserviceaccount.com`): Attach t
 * roles/dataproc.worker
 * roles/datastore.user
 * roles/datastudio.editor
+* roles/developerconnect.oauthUser
 * roles/developerconnect.user
 * roles/dialogflow.client
 * roles/dialogflow.reader
-* roles/discoveryengine.admin
+* roles/discoveryengine.editor
 * roles/discoveryengine.notebookOwner
 * roles/documentai.viewer
 * roles/errorreporting.writer
