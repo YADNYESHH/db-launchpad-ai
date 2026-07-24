@@ -145,6 +145,7 @@ The following APIs have been activated on your project. You cannot activate othe
 
 **Permissions:**
 Every team member has the following roles at the project level:
+* roles/agentregistry.editor
 * roles/aiplatform.admin
 * roles/aiplatform.migrator
 * roles/aiplatform.tensorboardWebAppUser
@@ -160,6 +161,7 @@ Every team member has the following roles at the project level:
 * roles/bigquerydatapolicy.maskedReader
 * roles/browser
 * roles/chat.owner
+* roles/cloudapiregistry.admin
 * roles/cloudasset.viewer
 * roles/cloudbuild.builds.approver
 * roles/cloudbuild.builds.editor
@@ -189,14 +191,24 @@ Every team member has the following roles at the project level:
 * roles/eventarc.developer
 * roles/firebase.admin
 * roles/iam.roleViewer
+* roles/iamconnectors.editor
+* roles/iap.httpsResourceAccessor
+* roles/iap.settingsAdmin
 * roles/logging.admin
+* roles/modelarmor.editor
+* roles/modelarmor.user
 * roles/monitoring.editor
+* roles/networksecurity.viewer
+* roles/networkservices.serviceExtensionsAdmin
 * roles/notebooks.admin
 * roles/notebooks.legacyViewer
 * roles/oauthconfig.editor
+* roles/observability.analyticsUser
+* roles/observability.viewer
 * roles/pubsub.editor
 * roles/retail.admin
 * roles/run.admin
+* roles/saasservicemgmt.admin
 * roles/secretmanager.admin
 * roles/servicemanagement.quotaViewer
 * roles/serviceusage.serviceUsageConsumer
@@ -216,6 +228,7 @@ Infrastructure SA (`infrastructure@hack-team-toruk-makto.iam.gserviceaccount.com
 
 Workload SA (`workload@hack-team-toruk-makto.iam.gserviceaccount.com`): Attach this to your compute resources (e.g., Cloud Run, Cloud Functions). It has the following roles:
 
+* roles/agentregistry.viewer
 * roles/aiplatform.user
 * roles/artifactregistry.createOnPushWriter
 * roles/bigquery.connectionUser
@@ -226,6 +239,7 @@ Workload SA (`workload@hack-team-toruk-makto.iam.gserviceaccount.com`): Attach t
 * roles/bigquery.readSessionUser
 * roles/bigquerydatapolicy.maskedReader
 * roles/chat.owner
+* roles/cloudapiregistry.viewer
 * roles/cloudasset.viewer
 * roles/cloudbuild.builds.builder
 * roles/cloudbuild.tokenAccessor
@@ -254,7 +268,10 @@ Workload SA (`workload@hack-team-toruk-makto.iam.gserviceaccount.com`): Attach t
 * roles/eventarc.connectionPublisher
 * roles/eventarc.eventReceiver
 * roles/eventarc.publisher
+* roles/iamconnectors.user
+* roles/iap.httpsResourceAccessor
 * roles/logging.logWriter
+* roles/modelarmor.user
 * roles/monitoring.metricWriter
 * roles/notebooks.runner
 * roles/pubsub.editor
