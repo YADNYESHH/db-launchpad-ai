@@ -3,10 +3,11 @@
   flex-direction: column;
   gap: 1.25rem;
   padding: 1.5rem;
-  background: #ffffff;
-  border: 1px solid #e2e6ec;
-  border-radius: 10px;
-  color: #1c2530;
+  background: var(--lp-surface);
+  border: 1px solid var(--lp-border);
+  border-radius: var(--lp-radius-lg);
+  color: var(--lp-text);
+  box-shadow: var(--lp-shadow);
 }
 
 .wa-header {
@@ -18,50 +19,52 @@
 .wa-title {
   margin: 0;
   font-size: 1.25rem;
-  font-weight: 650;
+  font-weight: 700;
+  color: var(--lp-navy);
+  letter-spacing: -0.01em;
 }
 
 .wa-subtitle {
   margin: 0;
   font-size: 0.875rem;
-  color: #5b6672;
+  color: var(--lp-text-muted);
   max-width: 60ch;
   line-height: 1.45;
 }
 
 .wa-alert {
-  padding: 0.65rem 0.9rem;
-  border-radius: 8px;
+  padding: 0.7rem 0.95rem;
+  border-radius: var(--lp-radius-sm);
   font-size: 0.875rem;
   border: 1px solid transparent;
 }
 
 .wa-alert-success {
-  background: #ecfdf3;
-  border-color: #abefc6;
-  color: #067647;
+  background: var(--lp-band-high-bg);
+  border-color: var(--lp-band-high);
+  color: var(--lp-band-high);
 }
 
 .wa-alert-error {
-  background: #fef3f2;
-  border-color: #fecdca;
-  color: #b42318;
+  background: var(--lp-band-none-bg);
+  border-color: var(--lp-band-none);
+  color: var(--lp-band-none);
 }
 
 .wa-state {
   padding: 1.5rem;
   text-align: center;
-  color: #5b6672;
+  color: var(--lp-text-muted);
   font-size: 0.9rem;
-  background: #f7f9fb;
-  border: 1px dashed #d7dde5;
-  border-radius: 8px;
+  background: var(--lp-surface-muted);
+  border: 1px dashed var(--lp-border-strong);
+  border-radius: var(--lp-radius-sm);
 }
 
 .wa-table-wrap {
   overflow-x: auto;
-  border: 1px solid #e6e9ee;
-  border-radius: 8px;
+  border: 1px solid var(--lp-border);
+  border-radius: var(--lp-radius-sm);
 }
 
 .wa-table {
@@ -72,17 +75,20 @@
 
 .wa-table thead th {
   text-align: left;
-  padding: 0.65rem 0.85rem;
-  background: #f4f6f9;
-  color: #45505d;
-  font-weight: 600;
-  border-bottom: 1px solid #e2e6ec;
+  padding: 0.7rem 0.85rem;
+  background: var(--lp-surface-tint);
+  color: var(--lp-text-muted);
+  font-weight: 700;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--lp-border);
   white-space: nowrap;
 }
 
 .wa-table tbody td {
   padding: 0.7rem 0.85rem;
-  border-bottom: 1px solid #eef1f5;
+  border-bottom: 1px solid var(--lp-border);
   vertical-align: top;
 }
 
@@ -91,44 +97,45 @@
 }
 
 .wa-row-active {
-  background: #f6faf7;
+  background: var(--lp-band-high-bg);
 }
 
 .wa-version {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 0.8125rem;
-  background: #f2f4f7;
-  padding: 0.15rem 0.4rem;
+  background: var(--lp-surface-muted);
+  padding: 0.15rem 0.45rem;
   border-radius: 5px;
+  color: var(--lp-navy);
 }
 
 .wa-badge {
   display: inline-block;
-  padding: 0.15rem 0.55rem;
+  padding: 0.16rem 0.6rem;
   border-radius: 999px;
   font-size: 0.75rem;
-  font-weight: 600;
+  font-weight: 700;
   white-space: nowrap;
 }
 
 .wa-badge-active {
-  background: #dcfae6;
-  color: #067647;
+  background: var(--lp-band-high-bg);
+  color: var(--lp-band-high);
 }
 
 .wa-badge-inactive {
-  background: #eceff3;
-  color: #667085;
+  background: var(--lp-surface-muted);
+  color: var(--lp-text-muted);
 }
 
 .wa-reason {
   max-width: 32ch;
-  color: #3a4552;
+  color: var(--lp-text);
   line-height: 1.4;
 }
 
 .wa-muted {
-  color: #98a2b3;
+  color: var(--lp-text-muted);
 }
 
 .wa-col-action {
@@ -138,12 +145,12 @@
 
 .wa-btn {
   border: 1px solid transparent;
-  border-radius: 7px;
+  border-radius: var(--lp-radius-sm);
   font-size: 0.8125rem;
   font-weight: 600;
-  padding: 0.45rem 0.9rem;
+  padding: 0.45rem 0.95rem;
   cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.12s ease, box-shadow 0.15s ease;
 }
 
 .wa-btn:disabled {
@@ -152,22 +159,25 @@
 }
 
 .wa-btn-primary {
-  background: #1a56db;
+  background: var(--lp-accent);
   color: #ffffff;
+  box-shadow: 0 2px 8px rgba(26, 82, 214, 0.24);
 }
 
 .wa-btn-primary:hover:not(:disabled) {
-  background: #1547b8;
+  background: var(--lp-navy-2);
+  transform: translateY(-1px);
 }
 
 .wa-btn-secondary {
-  background: #ffffff;
-  color: #1a56db;
-  border-color: #c4d2f4;
+  background: var(--lp-surface);
+  color: var(--lp-accent);
+  border-color: var(--lp-border-strong);
 }
 
 .wa-btn-secondary:hover:not(:disabled) {
-  background: #f4f7fe;
+  background: var(--lp-surface-tint);
+  border-color: var(--lp-accent);
 }
 
 .wa-form {
@@ -175,52 +185,54 @@
   flex-direction: column;
   gap: 0.5rem;
   padding: 1.25rem;
-  background: #f9fafb;
-  border: 1px solid #e6e9ee;
-  border-radius: 8px;
+  background: var(--lp-surface-muted);
+  border: 1px solid var(--lp-border);
+  border-radius: var(--lp-radius-sm);
 }
 
 .wa-form-title {
   margin: 0;
   font-size: 1rem;
-  font-weight: 650;
+  font-weight: 700;
+  color: var(--lp-navy);
 }
 
 .wa-form-hint {
   margin: 0 0 0.25rem;
   font-size: 0.8125rem;
-  color: #5b6672;
+  color: var(--lp-text-muted);
   line-height: 1.45;
 }
 
 .wa-label {
   font-size: 0.8125rem;
   font-weight: 600;
-  color: #344054;
+  color: var(--lp-text);
 }
 
 .wa-textarea {
   width: 100%;
   box-sizing: border-box;
   padding: 0.6rem 0.75rem;
-  border: 1px solid #cfd6df;
-  border-radius: 7px;
+  border: 1px solid var(--lp-border-strong);
+  border-radius: var(--lp-radius-sm);
   font: inherit;
   font-size: 0.875rem;
   resize: vertical;
-  color: #1c2530;
-  background: #ffffff;
+  color: var(--lp-text);
+  background: var(--lp-surface);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .wa-textarea:focus {
   outline: none;
-  border-color: #1a56db;
-  box-shadow: 0 0 0 3px rgba(26, 86, 219, 0.15);
+  border-color: var(--lp-accent);
+  box-shadow: 0 0 0 3px var(--lp-accent-soft);
 }
 
 .wa-form-error {
   font-size: 0.8125rem;
-  color: #b42318;
+  color: var(--lp-band-none);
 }
 
 .wa-form-actions {
@@ -233,9 +245,9 @@
   margin: 0;
   padding: 0.75rem 0.9rem;
   font-size: 0.8125rem;
-  color: #5b6672;
-  background: #f7f9fb;
-  border: 1px solid #e6e9ee;
-  border-radius: 8px;
+  color: var(--lp-text-muted);
+  background: var(--lp-surface-muted);
+  border: 1px solid var(--lp-border);
+  border-radius: var(--lp-radius-sm);
   line-height: 1.45;
 }

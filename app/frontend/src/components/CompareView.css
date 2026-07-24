@@ -6,10 +6,11 @@
 
 /* Selector -------------------------------------------------------------- */
 .cmp-selector {
-  border: 1px solid #e2e6ee;
-  border-radius: 10px;
-  background: #fff;
-  padding: 1rem 1.25rem;
+  border: 1px solid var(--lp-border);
+  border-radius: var(--lp-radius-lg);
+  background: var(--lp-surface);
+  padding: 1.1rem 1.35rem;
+  box-shadow: var(--lp-shadow);
 }
 
 .cmp-selector-head {
@@ -17,19 +18,20 @@
   align-items: baseline;
   justify-content: space-between;
   gap: 1rem;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.85rem;
 }
 
 .cmp-title {
   margin: 0;
   font-size: 1.15rem;
-  font-weight: 650;
-  color: #1c2430;
+  font-weight: 700;
+  color: var(--lp-navy);
+  letter-spacing: -0.01em;
 }
 
 .cmp-selector-count {
   font-size: 0.8rem;
-  color: #6b7686;
+  color: var(--lp-text-muted);
   white-space: nowrap;
 }
 
@@ -50,21 +52,28 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.4rem 0.7rem;
-  border: 1px solid #dbe0ea;
+  padding: 0.42rem 0.8rem;
+  border: 1px solid var(--lp-border-strong);
   border-radius: 999px;
   cursor: pointer;
   font-size: 0.85rem;
-  background: #f7f9fc;
-  transition: border-color 0.12s ease, background 0.12s ease;
+  background: var(--lp-surface-muted);
+  transition: border-color 0.12s ease, background 0.12s ease, box-shadow 0.12s ease;
 }
 
 .cmp-selector-label:hover {
-  border-color: #b7c1d4;
+  border-color: var(--lp-accent);
+  background: var(--lp-surface-tint);
+}
+
+.cmp-selector-label:focus-within {
+  border-color: var(--lp-accent);
+  box-shadow: 0 0 0 3px var(--lp-accent-soft);
 }
 
 .cmp-selector-label input {
   cursor: pointer;
+  accent-color: var(--lp-accent);
 }
 
 .cmp-selector-label-disabled {
@@ -77,8 +86,8 @@
 }
 
 .cmp-selector-name {
-  font-weight: 550;
-  color: #26303d;
+  font-weight: 600;
+  color: var(--lp-text);
 }
 
 /* Hint ------------------------------------------------------------------ */
@@ -86,18 +95,19 @@
   margin: 0;
   padding: 2rem 1rem;
   text-align: center;
-  color: #6b7686;
-  border: 1px dashed #cfd6e2;
-  border-radius: 10px;
-  background: #fafbfd;
+  color: var(--lp-text-muted);
+  border: 1px dashed var(--lp-border-strong);
+  border-radius: var(--lp-radius-lg);
+  background: var(--lp-surface-muted);
 }
 
 /* Table ----------------------------------------------------------------- */
 .cmp-table-wrap {
   overflow-x: auto;
-  border: 1px solid #e2e6ee;
-  border-radius: 10px;
-  background: #fff;
+  border: 1px solid var(--lp-border);
+  border-radius: var(--lp-radius-lg);
+  background: var(--lp-surface);
+  box-shadow: var(--lp-shadow);
 }
 
 .cmp-table {
@@ -112,27 +122,32 @@
   padding: 0.7rem 0.9rem;
   text-align: left;
   vertical-align: top;
-  border-bottom: 1px solid #eef1f6;
+  border-bottom: 1px solid var(--lp-border);
 }
 
 .cmp-metric-head,
 .cmp-startup-head {
-  background: #f4f6fb;
-  font-weight: 650;
-  color: #1c2430;
+  background: var(--lp-surface-tint);
+  font-weight: 700;
+  color: var(--lp-navy);
   position: sticky;
   top: 0;
+  z-index: 1;
 }
 
 .cmp-metric-cell {
   font-weight: 600;
-  color: #4a5568;
+  color: var(--lp-text-muted);
   white-space: nowrap;
-  background: #fafbfd;
+  background: var(--lp-surface-muted);
 }
 
 .cmp-cell {
-  color: #26303d;
+  color: var(--lp-text);
+}
+
+.cmp-table tbody tr:nth-child(even) .cmp-cell {
+  background: var(--lp-surface-muted);
 }
 
 .cmp-table tbody tr:last-child th,
@@ -142,16 +157,17 @@
 
 .cmp-leader {
   font-weight: 700;
-  color: #12603a;
+  color: var(--lp-green);
+  background: var(--lp-band-high-bg) !important;
 }
 
 .cmp-leader-mark {
-  color: #1a8a52;
+  color: var(--lp-green);
   font-size: 0.7rem;
 }
 
 .cmp-empty {
-  color: #9aa4b2;
+  color: var(--lp-text-muted);
 }
 
 /* Decathlon list -------------------------------------------------------- */
@@ -172,21 +188,22 @@
 }
 
 .cmp-decathlon-label {
-  color: #37424f;
+  color: var(--lp-text-muted);
 }
 
 .cmp-decathlon-score {
-  font-weight: 650;
-  color: #1c2430;
+  font-weight: 700;
+  color: var(--lp-navy);
+  font-variant-numeric: tabular-nums;
 }
 
 /* Priority pills -------------------------------------------------------- */
 .cmp-pill {
   display: inline-block;
-  padding: 0.15rem 0.55rem;
+  padding: 0.16rem 0.6rem;
   border-radius: 999px;
   font-size: 0.75rem;
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1.4;
   white-space: nowrap;
 }
@@ -197,23 +214,23 @@
 }
 
 .cmp-pill-high {
-  background: #e7f6ee;
-  color: #12603a;
+  background: var(--lp-band-high-bg);
+  color: var(--lp-band-high);
 }
 
 .cmp-pill-monitor {
-  background: #e6f0fb;
-  color: #1c4e86;
+  background: var(--lp-band-monitor-bg);
+  color: var(--lp-band-monitor);
 }
 
 .cmp-pill-validate {
-  background: #fdf3e2;
-  color: #8a5a12;
+  background: var(--lp-band-validate-bg);
+  color: var(--lp-band-validate);
 }
 
 .cmp-pill-none {
-  background: #eef0f4;
-  color: #5a6472;
+  background: var(--lp-band-none-bg);
+  color: var(--lp-band-none);
 }
 
 @media (max-width: 640px) {

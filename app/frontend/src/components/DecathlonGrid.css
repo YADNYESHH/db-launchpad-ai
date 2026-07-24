@@ -1,7 +1,7 @@
 .deca-root {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
 
 .deca-header {
@@ -18,15 +18,16 @@
 .deca-title {
   margin: 0 0 4px;
   font-size: 15px;
-  font-weight: 600;
-  color: #1f2937;
+  font-weight: 700;
+  color: var(--lp-navy);
+  letter-spacing: -0.01em;
 }
 
 .deca-caption {
   margin: 0;
   font-size: 12px;
   line-height: 1.4;
-  color: #6b7280;
+  color: var(--lp-text-muted);
 }
 
 .deca-overall {
@@ -35,41 +36,52 @@
   align-items: center;
   justify-content: center;
   flex: 0 0 auto;
-  padding: 6px 12px;
-  border-radius: 8px;
-  background: #f3f4f6;
-  border: 1px solid #e5e7eb;
+  padding: 10px 18px;
+  border-radius: var(--lp-radius);
+  background: var(--lp-brand-gradient);
+  border: 1px solid var(--lp-navy);
+  box-shadow: var(--lp-shadow-navy);
 }
 
 .deca-overall-value {
-  font-size: 24px;
-  font-weight: 700;
+  font-size: 26px;
+  font-weight: 800;
   line-height: 1;
-  color: #111827;
+  color: var(--lp-text-on-navy);
+  font-variant-numeric: tabular-nums;
 }
 
 .deca-overall-label {
-  margin-top: 2px;
+  margin-top: 3px;
   font-size: 10px;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: #6b7280;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  color: var(--lp-text-on-navy-muted);
 }
 
 .deca-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 10px;
+  gap: 12px;
 }
 
 .deca-cell {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 10px;
-  border-radius: 8px;
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
+  gap: 8px;
+  padding: 12px;
+  border-radius: var(--lp-radius);
+  background: var(--lp-surface);
+  border: 1px solid var(--lp-border);
+  box-shadow: var(--lp-shadow);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.deca-cell:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--lp-shadow-lg);
+  border-color: var(--lp-border-strong);
 }
 
 .deca-cell-head {
@@ -82,7 +94,7 @@
 .deca-cell-label {
   font-size: 12px;
   font-weight: 600;
-  color: #374151;
+  color: var(--lp-text);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -91,14 +103,15 @@
 .deca-cell-score {
   font-size: 13px;
   font-weight: 700;
-  color: #111827;
+  color: var(--lp-navy);
+  font-variant-numeric: tabular-nums;
 }
 
 .deca-bar-track {
   width: 100%;
-  height: 6px;
+  height: 7px;
   border-radius: 999px;
-  background: #eef0f3;
+  background: var(--lp-surface-muted);
   overflow: hidden;
 }
 
@@ -109,28 +122,31 @@
 }
 
 .deca-tier-high {
-  background: #16a34a;
+  background: var(--lp-band-high);
 }
 
 .deca-tier-mid {
-  background: #f59e0b;
+  background: var(--lp-band-monitor);
 }
 
 .deca-tier-low {
-  background: #dc2626;
+  background: var(--lp-band-none);
 }
 
 .deca-driver {
   margin: 0;
   font-size: 11px;
   line-height: 1.35;
-  color: #6b7280;
+  color: var(--lp-text-muted);
 }
 
 .deca-placeholder {
   padding: 16px;
   font-size: 12px;
   font-style: italic;
-  color: #9ca3af;
+  color: var(--lp-text-muted);
   text-align: center;
+  background: var(--lp-surface-muted);
+  border: 1px dashed var(--lp-border-strong);
+  border-radius: var(--lp-radius);
 }

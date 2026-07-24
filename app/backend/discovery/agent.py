@@ -43,37 +43,62 @@ class DiscoveredStartup:
     funding_stage: str
     estimated_annual_revenue_eur: float
     expansion_timeline_months: int | None
-    expansion_signals: list[dict]  # each: {signal_type, country, evidence_note, confidence}
+    # Each signal is enriched (public-only): {signal_type, country, evidence_note,
+    # confidence, signal_date, source_url}. Downstream mapper only reads the first
+    # four keys; the date/source_url ride along as extra evidence for the UI trail.
+    expansion_signals: list[dict]
     discovery_note: str
     source_citations: list[str] = field(default_factory=list)
+    # --- Optional public-enrichment fields (added for coverage, never fabricated) ---
+    # All default to a safe empty/None so the mapper contract is unchanged: mapper
+    # does not read these, and any omission from the LLM leaves an honest gap.
+    funding_amount_eur: float | None = None
+    revenue_band: str | None = None
+    employee_count_band: str | None = None
+    payment_corridors: list[str] = field(default_factory=list)
 
 
 _DISCOVERY_PROMPT_TEMPLATE = """You are a corporate-banking research analyst. Using live web search, \
-identify {n} real, currently-operating startups or scaleups in the "{sector}" sector that are \
-plausibly expanding internationally (new markets, cross-border customers or suppliers, or recent \
-funding to fund expansion). Prefer European-headquartered companies where possible.
+identify {n} real, currently-operating startups or scaleups in the "{sector}" sector that show \
+genuine cross-border EXPANSION signals (entering new markets, cross-border customers or suppliers, \
+international hiring, or fresh funding earmarked for expansion). Prefer European-headquartered \
+companies where possible. Only include companies that actually exist and are trading today.
 
-For EACH company, return ONLY facts you can support from search results. Do not invent private \
-financial data. If a figure is an estimate, keep it conservative and clearly an estimate.
+HONESTY RULES (critical):
+- Return ONLY values you can support from a real public source found in your search results.
+- If a value is NOT supported by a real public source, set it to null. Do NOT guess, infer, or \
+fabricate any number, date, country, or corridor. A null is far better than an invented value.
+- Do not invent private banking data (payment volumes, internal financials). Where a public \
+figure can only be estimated (e.g. revenue), keep it conservative and mark it clearly as a band \
+in "revenue_band" rather than a false-precision number.
+- For every expansion signal, include the real source URL that supports it whenever one exists.
 
 Return a JSON array (and nothing else) where each element has exactly these keys:
 - "name": string
 - "sector": string (specific sub-sector)
-- "hq_country": string
-- "current_countries": array of country name strings (markets it already operates in)
-- "target_countries": array of country name strings (markets it is expanding into; may be empty)
-- "growth_stage": one of "Seed", "Series A", "Series B", "Series C", "Scaleup", "Growth"
-- "funding_stage": string (e.g. "Series B")
-- "estimated_annual_revenue_eur": number (a conservative public estimate in EUR; 0 if truly unknown)
-- "expansion_timeline_months": integer or null (months until next market go-live if known)
+- "hq_country": string (headquarters country) or null
+- "current_countries": array of country name strings it already operates in (empty array if unknown)
+- "target_countries": array of country name strings it is expanding into (empty array if unknown)
+- "growth_stage": one of "Seed", "Series A", "Series B", "Series C", "Scaleup", "Growth" or null
+- "funding_stage": string (e.g. "Series B") or null
+- "funding_amount_eur": number in EUR of the most recent disclosed round, or null if not public
+- "estimated_annual_revenue_eur": number in EUR (conservative public estimate) or 0 if truly unknown
+- "revenue_band": short public revenue band string (e.g. "€10M-€50M ARR") or null if no source
+- "employee_count_band": short headcount band string (e.g. "51-200 employees") or null if unknown
+- "target_payment_corridors": array of likely cross-border payment corridor strings using ISO-style \
+country codes (e.g. "DE-GB", "DE-SG") derived from HQ + target markets, or empty array if unclear
+- "expansion_timeline_months": integer months until next market go-live if publicly stated, else null
 - "expansion_signals": array of objects, each with:
     - "signal_type": one of "new_country_launch", "international_hiring", "foreign_customer_growth", "supplier_expansion", "funding_event"
     - "country": country name string or null
+    - "signal_date": ISO date (YYYY-MM-DD) or year string of the public evidence, or null if undated
     - "evidence_note": one short sentence describing the public evidence
+    - "source_url": the real URL of the public source for this signal, or null if none is available
     - "confidence": number between 0 and 1 reflecting how well-supported this signal is
-- "discovery_note": one sentence stating what public evidence backs this entry and that figures are estimates
+- "discovery_note": one sentence stating what public evidence backs this entry and that any figures \
+are estimates
 
-Return strictly valid JSON, no markdown fences, no commentary."""
+Return strictly valid JSON, no markdown fences, no commentary. Omit (null) anything you cannot ground."""
 
 
 def _extract_json_array(text: str) -> list[dict]:
@@ -90,6 +115,65 @@ def _extract_json_array(text: str) -> list[dict]:
     if start == -1 or end == -1 or end <= start:
         raise ValueError("no JSON array found in model output")
     return json.loads(text[start : end + 1])
+
+
+def _opt_str(value) -> str | None:
+    """Coerce a value to a trimmed non-empty string, or None. Never raises."""
+    if value is None:
+        return None
+    try:
+        s = str(value).strip()
+    except Exception:  # noqa: BLE001 - parsing must never break discovery
+        return None
+    return s or None
+
+
+def _opt_float(value) -> float | None:
+    """Coerce to a non-negative float, or None when absent/unparseable. Never raises."""
+    if value in (None, ""):
+        return None
+    try:
+        f = float(value)
+    except (TypeError, ValueError):
+        return None
+    return f if f >= 0 else None
+
+
+def _str_list(value) -> list[str]:
+    """Coerce a value into a list of trimmed non-empty strings. Never raises."""
+    if not isinstance(value, list):
+        return []
+    out: list[str] = []
+    for item in value:
+        s = _opt_str(item)
+        if s:
+            out.append(s)
+    return out
+
+
+def _clean_signals(raw_signals) -> list[dict]:
+    """Normalise expansion signals defensively, preserving the four keys the
+    mapper reads (signal_type, country, evidence_note, confidence) and carrying
+    the enrichment keys (signal_date, source_url) along for the evidence trail.
+    Unparseable entries are skipped rather than raising."""
+    out: list[dict] = []
+    if not isinstance(raw_signals, list):
+        return out
+    for s in raw_signals:
+        if not isinstance(s, dict):
+            continue
+        out.append(
+            {
+                "signal_type": _opt_str(s.get("signal_type")) or "",
+                "country": _opt_str(s.get("country")),
+                "evidence_note": _opt_str(s.get("evidence_note")) or "",
+                "confidence": s.get("confidence", 0.6),
+                "signal_date": _opt_str(s.get("signal_date")),
+                "source_url": _opt_str(s.get("source_url") or s.get("source")),
+            }
+        )
+    return out
+
 
 
 def _get_grounded_model():
@@ -159,20 +243,26 @@ def discover_startups(sector: str, limit: int = 4) -> tuple[list[DiscoveredStart
                 DiscoveredStartup(
                     name=str(rec["name"]).strip(),
                     sector=str(rec.get("sector", sector)).strip() or sector,
-                    hq_country=str(rec.get("hq_country", "Unknown")).strip() or "Unknown",
-                    current_countries=[str(c).strip() for c in rec.get("current_countries", []) if str(c).strip()],
-                    target_countries=[str(c).strip() for c in rec.get("target_countries", []) if str(c).strip()],
-                    growth_stage=str(rec.get("growth_stage", "Scaleup")).strip() or "Scaleup",
-                    funding_stage=str(rec.get("funding_stage", "Unknown")).strip() or "Unknown",
+                    hq_country=str(rec.get("hq_country") or "Unknown").strip() or "Unknown",
+                    current_countries=_str_list(rec.get("current_countries")),
+                    target_countries=_str_list(rec.get("target_countries")),
+                    growth_stage=str(rec.get("growth_stage") or "Scaleup").strip() or "Scaleup",
+                    funding_stage=str(rec.get("funding_stage") or "Unknown").strip() or "Unknown",
                     estimated_annual_revenue_eur=max(0.0, float(rec.get("estimated_annual_revenue_eur", 0) or 0)),
                     expansion_timeline_months=(
                         int(rec["expansion_timeline_months"])
                         if rec.get("expansion_timeline_months") not in (None, "")
                         else None
                     ),
-                    expansion_signals=[s for s in rec.get("expansion_signals", []) if isinstance(s, dict)],
+                    expansion_signals=_clean_signals(rec.get("expansion_signals")),
                     discovery_note=str(rec.get("discovery_note", "")).strip(),
                     source_citations=list(citations),
+                    funding_amount_eur=_opt_float(rec.get("funding_amount_eur")),
+                    revenue_band=_opt_str(rec.get("revenue_band")),
+                    employee_count_band=_opt_str(rec.get("employee_count_band")),
+                    payment_corridors=_str_list(
+                        rec.get("target_payment_corridors") or rec.get("payment_corridors")
+                    ),
                 )
             )
         except (TypeError, ValueError):

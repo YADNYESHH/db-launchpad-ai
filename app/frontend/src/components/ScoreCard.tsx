@@ -1,5 +1,6 @@
 import { PRIORITY_BAND_LABELS, SUB_SCORE_LABELS } from '../types'
 import type { ScoreRecord } from '../types'
+import ScoreDonut from './ScoreDonut'
 
 function bandClass(score: number): string {
   if (score >= 80) return 'high'
@@ -12,8 +13,13 @@ export default function ScoreCard({ record }: { record: ScoreRecord }) {
   return (
     <div className="scorecard">
       <div className={`final-score-banner ${bandClass(record.final_score)}`}>
-        <div className="final-score-value">{record.final_score.toFixed(1)} / 100</div>
-        <div className="final-score-band">{PRIORITY_BAND_LABELS[record.priority_band]}</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+          <ScoreDonut score={record.final_score} band={record.priority_band} size={96} />
+          <div>
+            <div className="final-score-value">{record.final_score.toFixed(1)} / 100</div>
+            <div className="final-score-band">{PRIORITY_BAND_LABELS[record.priority_band]}</div>
+          </div>
+        </div>
         {record.missing_data_flags.length > 0 && (
           <div className="missing-data-warning">
             Missing/incomplete data: {record.missing_data_flags.join(', ')}

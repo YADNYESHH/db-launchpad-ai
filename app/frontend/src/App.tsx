@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
-import { getPortfolioSummary, getToken, listProfiles, me, setToken } from './api'
+import { getPortfolioSummary, getToken, listProfiles, me, seedLivePortfolio, setToken } from './api'
+import type { SeedPortfolioResult } from './api'
 import type { PortfolioSummary, ProfileBundle, UserPublic } from './types'
 import Login from './components/Login'
 import Portfolio from './components/Portfolio'
@@ -10,7 +11,9 @@ import WeightsAdmin from './components/WeightsAdmin'
 import { formatEur } from './format'
 import {
   AppHeader,
+  ApplicationFlow,
   DecisionBandLegend,
+  InfoBar,
   PolicyChips,
   PrinciplesFooter,
   StatTiles,
@@ -35,6 +38,9 @@ function App() {
   const [bundles, setBundles] = useState<ProfileBundle[]>([])
   const [summary, setSummary] = useState<PortfolioSummary | null>(null)
   const [refreshKey, setRefreshKey] = useState(0)
+  const [seeding, setSeeding] = useState(false)
+  const [seedResult, setSeedResult] = useState<SeedPortfolioResult | null>(null)
+  const [seedError, setSeedError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!getToken()) {
@@ -58,6 +64,21 @@ function App() {
   }, [user, refreshKey])
 
   const handleRefresh = useCallback(() => setRefreshKey((k) => k + 1), [])
+
+  const handleSeedLive = useCallback(async () => {
+    setSeeding(true)
+    setSeedError(null)
+    setSeedResult(null)
+    try {
+      const result = await seedLivePortfolio()
+      setSeedResult(result)
+      setRefreshKey((k) => k + 1)
+    } catch {
+      setSeedError('Live portfolio population is unavailable right now. The existing portfolio is unchanged.')
+    } finally {
+      setSeeding(false)
+    }
+  }, [])
 
   function handleLogout() {
     setToken(null)
@@ -89,6 +110,8 @@ function App() {
     <div className="app-shell">
       <AppHeader user={user} onLogout={handleLogout} />
 
+      <InfoBar />
+
       <div className="app-toolbar">
         <nav className="view-nav">
           {NAV.map((n) => (
@@ -104,6 +127,8 @@ function App() {
         </nav>
         <PolicyChips />
       </div>
+
+      <ApplicationFlow />
 
       <StatTiles tiles={tiles} />
 
@@ -124,6 +149,35 @@ function App() {
 
         {view === 'discovery' && (
           <div className="panel">
+            <div className="live-populate">
+              <div className="live-populate-copy">
+                <h3>Populate a live portfolio</h3>
+                <p>
+                  Discover real companies across cross-border payments, fintech, e-commerce,
+                  logistics and health sectors via grounded web search. Results are flagged
+                  live-grounded with source citations; if live discovery is unavailable the
+                  existing portfolio stays intact.
+                </p>
+              </div>
+              <button type="button" onClick={handleSeedLive} disabled={seeding}>
+                {seeding ? 'Populating live data…' : 'Populate live portfolio'}
+              </button>
+            </div>
+            {seedResult && (
+              <div className={`live-populate-status${seedResult.live ? ' ok' : ''}`}>
+                {seedResult.live
+                  ? `Added ${seedResult.added} live companies across ${seedResult.sectors.length} sectors. Portfolio now has ${seedResult.total_profiles} startups.`
+                  : 'No live companies were added (live discovery unavailable). The existing portfolio is unchanged.'}
+                {seedResult.reasons.length > 0 && (
+                  <ul className="live-populate-reasons">
+                    {seedResult.reasons.map((r, i) => (
+                      <li key={i}>{r}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
+            {seedError && <div className="error-banner">{seedError}</div>}
             <DiscoveryPanel onDiscovered={handleRefresh} />
           </div>
         )}

@@ -109,6 +109,27 @@ export async function getPortfolioSummary(): Promise<PortfolioSummary> {
   return request('/portfolio/summary')
 }
 
+export interface SeedPortfolioResult {
+  added: number
+  sectors: string[]
+  reasons: string[]
+  live: boolean
+  total_profiles: number
+}
+
+export async function seedLivePortfolio(
+  sectors?: string[],
+  perSector?: number,
+): Promise<SeedPortfolioResult> {
+  const body: Record<string, unknown> = {}
+  if (sectors) body.sectors = sectors
+  if (perSector) body.per_sector = perSector
+  return request('/discovery/seed-portfolio', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  })
+}
+
 export async function listAllWeights(): Promise<WeightConfig[]> {
   return request('/weights/all')
 }

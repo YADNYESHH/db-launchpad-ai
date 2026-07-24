@@ -1,14 +1,14 @@
 .pipe-panel {
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  padding: 20px 22px;
-  background: #ffffff;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+  border: 1px solid var(--lp-border);
+  border-radius: var(--lp-radius-lg);
+  padding: 22px 24px;
+  background: var(--lp-surface);
+  box-shadow: var(--lp-shadow);
 }
 
 .pipe-placeholder {
   margin: 0;
-  color: #94a3b8;
+  color: var(--lp-text-muted);
   font-size: 0.9rem;
   font-style: italic;
 }
@@ -16,10 +16,10 @@
 .pipe-heading {
   margin: 0 0 12px;
   font-size: 0.8rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
+  font-weight: 700;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #64748b;
+  color: var(--lp-text-muted);
 }
 
 .pipe-headline {
@@ -27,25 +27,31 @@
   flex-direction: column;
   gap: 4px;
   margin-bottom: 18px;
+  padding: 16px 18px;
+  background: var(--lp-surface-tint);
+  border: 1px solid var(--lp-border);
+  border-radius: var(--lp-radius);
 }
 
 .pipe-figure {
-  font-size: 2.25rem;
-  font-weight: 700;
+  font-size: 2.4rem;
+  font-weight: 800;
   line-height: 1.1;
-  color: #0f172a;
-  letter-spacing: -0.02em;
+  color: var(--lp-navy);
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
 }
 
 .pipe-caption {
   font-size: 0.85rem;
-  color: #64748b;
+  font-weight: 600;
+  color: var(--lp-accent);
 }
 
 .pipe-breakdown {
   margin: 0 0 16px;
   padding: 0;
-  border-top: 1px solid #f1f5f9;
+  border-top: 1px solid var(--lp-border);
 }
 
 .pipe-row {
@@ -53,21 +59,21 @@
   align-items: baseline;
   justify-content: space-between;
   gap: 16px;
-  padding: 8px 0;
-  border-bottom: 1px solid #f1f5f9;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--lp-border);
 }
 
 .pipe-row-label {
   margin: 0;
   font-size: 0.9rem;
-  color: #334155;
+  color: var(--lp-text-muted);
 }
 
 .pipe-row-value {
   margin: 0;
   font-size: 0.9rem;
-  font-weight: 600;
-  color: #0f172a;
+  font-weight: 700;
+  color: var(--lp-navy);
   font-variant-numeric: tabular-nums;
 }
 
@@ -76,5 +82,5 @@
   font-size: 0.78rem;
   font-style: italic;
   line-height: 1.4;
-  color: #94a3b8;
+  color: var(--lp-text-muted);
 }

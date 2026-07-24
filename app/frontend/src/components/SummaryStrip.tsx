@@ -1,5 +1,6 @@
 import { PRIORITY_BAND_LABELS } from '../types'
 import type { RecommendationRecord, ScoreRecord } from '../types'
+import ScoreDonut from './ScoreDonut'
 
 function bandClass(score: number): string {
   if (score >= 80) return 'high'
@@ -23,10 +24,7 @@ export default function SummaryStrip({
 
   return (
     <div className={`summary-strip ${bandClass(score.final_score)}`}>
-      <div className="summary-cell">
-        <span className="summary-label">Score</span>
-        <span className="summary-value">{score.final_score.toFixed(0)}/100</span>
-      </div>
+      <ScoreDonut score={score.final_score} band={score.priority_band} label="Opportunity" />
       <div className="summary-cell">
         <span className="summary-label">Priority</span>
         <span className="summary-value">{PRIORITY_BAND_LABELS[score.priority_band]}</span>

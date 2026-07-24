@@ -3,13 +3,14 @@ import os
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 
-from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi import Body, Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.staticfiles import StaticFiles
 
 from .auth.deps import get_current_user, require_roles
 from .auth.security import TokenPayload, create_access_token, verify_password
+from .discovery.seed_live import seed_live_portfolio
 from .models import Role, UserPublic
 from .models.api import (
     CreateProfileRequest,
@@ -66,9 +67,50 @@ def _seed_if_empty() -> None:
                 logger.exception("Failed to auto-score profile %s", profile.startup_id)
 
 
+def _truthy(value: str | None) -> bool:
+    return (value or "").strip().lower() in ("1", "true", "yes", "on")
+
+
+def _startup_seed() -> None:
+    """Seed the store on startup.
+
+    Default (LIVE_SEED unset): synthetic seed only — unchanged behavior.
+
+    LIVE_SEED truthy: attempt a live-first seed of REAL startups via grounded
+    discovery. If it adds nothing (e.g. no GCP creds), fall back to the
+    synthetic seed so the app always has data. The synthetic fallback is never
+    weakened; a live seed only *adds* real companies on top of demo users and
+    weight config.
+    """
+    if not _truthy(os.getenv("LIVE_SEED")):
+        _seed_if_empty()
+        return
+
+    store = get_store()
+    # Ensure demo users / weight config / auto-scoring baseline always exists,
+    # regardless of whether the live call succeeds.
+    _seed_if_empty()
+    try:
+        result = seed_live_portfolio(store, actor="system")
+    except Exception:
+        logger.exception("Live portfolio seed failed; synthetic seed retained.")
+        return
+    if result.get("added", 0) > 0:
+        logger.info(
+            "Live-seeded %d real startups across sectors %s.",
+            result["added"],
+            result.get("sectors"),
+        )
+    else:
+        logger.warning(
+            "Live seed added no startups (%s); retaining synthetic seed.",
+            result.get("reasons"),
+        )
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    _seed_if_empty()
+    _startup_seed()
     yield
 
 
@@ -238,6 +280,28 @@ def discovery_search(
     store = get_store()
     limit = max(1, min(req.limit, 6))
     return run_discovery(store, req.sector, actor=current.user_id, limit=limit)
+
+
+@app.post("/discovery/seed-portfolio")
+def seed_portfolio_endpoint(
+    body: dict | None = Body(default=None),
+    current: TokenPayload = Depends(require_roles(Role.RM, Role.PRODUCT_OWNER, Role.ADMIN)),
+):
+    """Live-first: populate the portfolio with REAL startups across several
+    sectors via grounded discovery. Fully defensive — a failing sector never
+    aborts the rest, and if the live layer is unavailable the response simply
+    reports ``live=false`` with reasons (the synthetic seed stays intact)."""
+    store = get_store()
+    body = body or {}
+    sectors = body.get("sectors")
+    per_sector = body.get("per_sector", 3)
+    try:
+        per_sector = int(per_sector)
+    except (TypeError, ValueError):
+        per_sector = 3
+    result = seed_live_portfolio(store, actor=current.user_id, sectors=sectors, per_sector=per_sector)
+    return {**result, "total_profiles": len(store.list_profiles())}
+
 
 
 @app.post("/profiles/{startup_id}/score")

@@ -84,6 +84,21 @@ def to_models(
         created_at=created,
     )
 
+    # Optional FREE public-registry enrichment (GLEIF LEI). Fully guarded: if
+    # disabled by env, offline, or on any failure it is simply skipped and
+    # NEVER breaks mapping/discovery. Adds only verifiable legal-entity facts.
+    try:
+        from .enrichment import ENRICHMENT_ENABLED, enrich_profile_note
+
+        if ENRICHMENT_ENABLED:
+            enrichment_note, citation_url = enrich_profile_note(profile.name)
+            if enrichment_note:
+                profile.discovery_note = f"{profile.discovery_note} {enrichment_note}".strip()
+            if citation_url and citation_url not in profile.source_citations:
+                profile.source_citations.append(citation_url)
+    except Exception:  # enrichment is best-effort only; discovery must not fail
+        pass
+
     signals: list[ExpansionSignal] = []
     for i, s in enumerate(discovered.expansion_signals):
         stype = str(s.get("signal_type", "")).strip()
