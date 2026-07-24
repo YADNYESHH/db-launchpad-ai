@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DB LaunchPad AI — Pitch</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/black.css" id="theme" />
+    <style>
+      :root {
+        --db-navy: #0a1f5c;
+        --db-navy-2: #123a9e;
+        --db-blue: #1a52d6;
+        --db-cyan: #33c9ff;
+        --db-green: #2ec77a;
+        --db-amber: #ffc043;
+        --db-ink: #0a1730;
+        --db-mut: #b9c6de;
+      }
+      .reveal {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        font-size: 30px;
+      }
+      .reveal .slides {
+        text-align: left;
+      }
+      .reveal .slides section {
+        background:
+          radial-gradient(1200px 700px at 100% -10%, rgba(51, 201, 255, 0.12), transparent 60%),
+          linear-gradient(150deg, #071638 0%, #0a1f5c 55%, #123a9e 100%);
+        border-radius: 18px;
+        padding: 46px 60px !important;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+      }
+      .reveal h1,
+      .reveal h2,
+      .reveal h3 {
+        color: #fff;
+        text-transform: none;
+        letter-spacing: -0.01em;
+        line-height: 1.08;
+        margin: 0 0 0.4em;
+      }
+      .reveal h1 {
+        font-size: 2.0em;
+        font-weight: 800;
+      }
+      .reveal h2 {
+        font-size: 1.42em;
+        font-weight: 800;
+      }
+      .reveal h3 {
+        font-size: 1.05em;
+        font-weight: 700;
+        color: var(--db-cyan);
+      }
+      .reveal p,
+      .reveal li {
+        color: #eaf1ff;
+      }
+      .reveal .muted {
+        color: var(--db-mut);
+      }
+      .reveal em {
+        color: var(--db-cyan);
+        font-style: normal;
+        font-weight: 700;
+      }
+      .reveal strong {
+        color: #fff;
+      }
+      .db-brand {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 22px;
+      }
+      .db-mark {
+        display: inline-grid;
+        place-items: center;
+        width: 66px;
+        height: 66px;
+        border-radius: 14px;
+        font-weight: 800;
+        font-size: 26px;
+        color: #fff;
+        background: linear-gradient(135deg, #0a1f5c, #1a52d6 70%, #33c9ff);
+        box-shadow: 0 8px 22px rgba(26, 82, 214, 0.5);
+        letter-spacing: 1px;
+      }
+      .kicker {
+        display: inline-block;
+        font-size: 0.62em;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--db-cyan);
+        border: 1px solid rgba(51, 201, 255, 0.4);
+        border-radius: 999px;
+        padding: 5px 14px;
+        margin-bottom: 18px;
+      }
+      .grid {
+        display: grid;
+        gap: 18px;
+      }
+      .g2 { grid-template-columns: 1fr 1fr; }
+      .g3 { grid-template-columns: repeat(3, 1fr); }
+      .g4 { grid-template-columns: repeat(4, 1fr); }
+      .card {
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        border-radius: 14px;
+        padding: 16px 18px;
+      }
+      .card h3 { margin: 0 0 6px; }
+      .card p { margin: 0; font-size: 0.72em; color: #dfe8ff; }
+      .stat {
+        text-align: center;
+      }
+      .stat .n {
+        font-size: 1.9em;
+        font-weight: 800;
+        color: #fff;
+        background: linear-gradient(180deg, #fff, var(--db-cyan));
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      .stat .l {
+        font-size: 0.62em;
+        color: var(--db-mut);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+      .pill {
+        display: inline-block;
+        font-size: 0.6em;
+        font-weight: 700;
+        border-radius: 999px;
+        padding: 3px 12px;
+        margin: 0 6px 8px 0;
+      }
+      .pill.green { background: rgba(46, 199, 122, 0.16); color: var(--db-green); border: 1px solid rgba(46,199,122,0.4); }
+      .pill.blue { background: rgba(51, 201, 255, 0.14); color: var(--db-cyan); border: 1px solid rgba(51,201,255,0.4); }
+      .pill.amber { background: rgba(255, 192, 67, 0.16); color: var(--db-amber); border: 1px solid rgba(255,192,67,0.4); }
+      .flow {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+      }
+      .flow .step {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        border-radius: 10px;
+        padding: 8px 12px;
+        font-size: 0.62em;
+      }
+      .flow .num {
+        display: inline-grid;
+        place-items: center;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: var(--db-blue);
+        color: #fff;
+        font-weight: 800;
+        font-size: 0.85em;
+      }
+      .flow .arrow { color: var(--db-cyan); font-size: 0.7em; }
+      .big {
+        font-size: 1.25em;
+        line-height: 1.3;
+      }
+      .reveal ul { margin-left: 0.4em; }
+      .reveal li { margin-bottom: 0.35em; font-size: 0.82em; }
+      table.crit {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.6em;
+      }
+      table.crit th, table.crit td {
+        text-align: left;
+        padding: 9px 12px;
+        border-bottom: 1px solid rgba(255,255,255,0.12);
+        vertical-align: top;
+      }
+      table.crit th { color: var(--db-cyan); text-transform: uppercase; letter-spacing: 0.06em; font-size: 0.92em; }
+      .footer-note {
+        position: absolute;
+        bottom: 18px;
+        left: 60px;
+        right: 60px;
+        font-size: 0.44em;
+        color: var(--db-mut);
+        display: flex;
+        justify-content: space-between;
+      }
+      .reveal .slides section .fragment.highlight-current-blue.current-fragment { color: var(--db-cyan); }
+    </style>
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <!-- 1. TITLE -->
+        <section data-auto-animate>
+          <div class="db-brand">
+            <span class="db-mark">DB</span>
+            <div>
+              <div style="font-size: 0.7em; color: var(--db-mut); letter-spacing: 0.12em; text-transform: uppercase;">Deutsche Bank · 2026 Global Hackathon (The Decathlon)</div>
+              <div style="font-size: 0.9em; font-weight: 700; color: #fff;">Team toruk-makto</div>
+            </div>
+          </div>
+          <h1>DB LaunchPad&nbsp;AI</h1>
+          <p class="big">The AI that helps a relationship manager call the <em>right</em> client, at the <em>right</em> time, with the <em>right</em> reason — <strong>before the competition does.</strong></p>
+          <p class="muted" style="margin-top: 24px;">A live, explainable, human-governed opportunity-intelligence platform for cross-border payments, collections &amp; cash management.</p>
+          <div class="footer-note"><span>DB LaunchPad AI — internal prototype for research &amp; hackathon use</span><span>Live on Google Cloud Run</span></div>
+        </section>
+
+        <!-- 2. PROBLEM -->
+        <section>
+          <span class="kicker">The problem</span>
+          <h2>Banks react late. Fintechs get there first.</h2>
+          <div class="grid g3" style="margin-top: 18px;">
+            <div class="card"><h3>Signals are everywhere</h3><p>A scale-up opens three new countries, hires abroad, raises a round — the buying signal is public days before the bank hears it.</p></div>
+            <div class="card"><h3>RMs are overloaded</h3><p>Hundreds of names, no way to triage, no defensible reason why one prospect matters more than another.</p></div>
+            <div class="card"><h3>Opportunity leaks</h3><p>By the time an RM calls, a fintech has already won the FX, treasury and cash-management mandate.</p></div>
+          </div>
+          <p class="big" style="margin-top: 26px;">The intelligence exists. The <em>timely, explainable, actionable</em> intelligence does not.</p>
+        </section>
+
+        <!-- 3. THE IDEA -->
+        <section>
+          <span class="kicker">The idea</span>
+          <h2>From reactive banking to <em>proactive advisory</em></h2>
+          <p>DB LaunchPad AI continuously <strong>discovers</strong> high-growth companies expanding across borders, builds a <strong>digital twin</strong> of each, <strong>scores the opportunity</strong> with transparent AI, quantifies the <strong>euro value</strong>, and hands the RM an <strong>approved, evidence-backed brief</strong>.</p>
+          <div class="grid g4" style="margin-top: 24px;">
+            <div class="card stat"><div class="n">Live</div><div class="l">grounded discovery</div></div>
+            <div class="card stat"><div class="n">10-dim</div><div class="l">Decathlon twin</div></div>
+            <div class="card stat"><div class="n">7-factor</div><div class="l">explainable score</div></div>
+            <div class="card stat"><div class="n">€ value</div><div class="l">per opportunity</div></div>
+          </div>
+          <p class="muted" style="margin-top: 22px;">Decision <em>support</em> — never autonomous. A human approves every output.</p>
+        </section>
+
+        <!-- 4. LIVE DEMO -->
+        <section data-background-gradient="linear-gradient(150deg,#071638,#1a52d6)">
+          <span class="kicker">See it live</span>
+          <h1 style="font-size: 1.7em;">Let's open the live app.</h1>
+          <p class="big">Login → ranked portfolio → a real company's digital twin → explainable scorecard → RM brief with guardrails → one click to the audit trail.</p>
+          <p class="muted" style="margin-top: 20px;">Everything you are about to see is running on Google Cloud Run, right now.</p>
+        </section>
+
+        <!-- 5. HOW IT WORKS -->
+        <section>
+          <span class="kicker">How it works · a team of agents</span>
+          <h2>A multi-agent pipeline — honest by construction</h2>
+          <div class="flow" style="margin: 16px 0 20px;">
+            <div class="step"><span class="num">1</span>Discovery (grounded web search)</div><span class="arrow">▶</span>
+            <div class="step"><span class="num">2</span>Digital-twin builder</div><span class="arrow">▶</span>
+            <div class="step"><span class="num">3</span>Decathlon (10 dimensions)</div><span class="arrow">▶</span>
+            <div class="step"><span class="num">4</span>Opportunity scoring</div><span class="arrow">▶</span>
+            <div class="step"><span class="num">5</span>Recommendation + guardrail</div><span class="arrow">▶</span>
+            <div class="step"><span class="num">6</span>Human approval</div><span class="arrow">▶</span>
+            <div class="step"><span class="num">7</span>Audit &amp; monitor</div>
+          </div>
+          <div class="grid g3">
+            <div class="card"><h3>Grounded, not guessed</h3><p>Discovery uses Gemini + Google Search grounding; every company carries real source citations. Registry facts verified via GLEIF.</p></div>
+            <div class="card"><h3>Deterministic where it matters</h3><p>The score is a transparent weighted model — reproducible every run. The LLM only phrases prose; it never moves a number.</p></div>
+            <div class="card"><h3>Honest gaps</h3><p>Private banking data is never invented. Missing data caps the priority band — so trust is earned, not faked.</p></div>
+          </div>
+        </section>
+
+        <!-- 6. TECHNOLOGY -->
+        <section>
+          <span class="kicker">Technology &amp; architecture</span>
+          <h2>Enterprise-grade, built fast, live today</h2>
+          <div class="grid g2">
+            <div>
+              <h3>Stack</h3>
+              <span class="pill blue">FastAPI + Pydantic</span><span class="pill blue">React + TypeScript</span>
+              <span class="pill blue">Gemini 2.5 (google-genai, grounded)</span><span class="pill blue">Firestore</span>
+              <span class="pill blue">Cloud Run</span><span class="pill blue">Workload Identity Federation</span>
+              <span class="pill blue">GitHub Actions CI/CD</span>
+              <h3 style="margin-top: 14px;">Engineering quality</h3>
+              <span class="pill green">132 automated tests</span><span class="pill green">lint + secret + dependency scans</span>
+              <span class="pill green">JWT auth · 4 roles (RBAC)</span><span class="pill green">no service-account keys</span>
+            </div>
+            <div class="grid g2">
+              <div class="card stat"><div class="n">132</div><div class="l">tests, green</div></div>
+              <div class="card stat"><div class="n">0</div><div class="l">stored secrets (WIF)</div></div>
+              <div class="card stat"><div class="n">CI→CD</div><div class="l">push-to-deploy</div></div>
+              <div class="card stat"><div class="n">Cloud</div><div class="l">Run, autoscaling</div></div>
+            </div>
+          </div>
+          <p class="muted" style="margin-top: 18px;">Deterministic scoring is separated from generative narrative by design (ARCH-01) — the bank can trust the number and still get fluent prose.</p>
+        </section>
+
+        <!-- 7. RESPONSIBLE AI -->
+        <section>
+          <span class="kicker">Responsible &amp; ethical AI</span>
+          <h2>Trust is the product</h2>
+          <div class="grid g4">
+            <div class="card"><h3>Human-in-the-loop</h3><p>Every recommendation is reviewed and approved by a person before use.</p></div>
+            <div class="card"><h3>Explainable</h3><p>Every score exposes its drivers, weights and rationale — no black box.</p></div>
+            <div class="card"><h3>No fabricated data</h3><p>Grounded facts + citations; private data left honestly absent, not invented.</p></div>
+            <div class="card"><h3>Governed &amp; audited</h3><p>Guardrails block over-claims; scoring weights are proposed &amp; approved; every step is audit-logged.</p></div>
+          </div>
+          <p class="big" style="margin-top: 24px;">Fairness, transparency, accountability and auditability are <em>architected in</em>, not bolted on.</p>
+        </section>
+
+        <!-- 8. BUSINESS VALUE -->
+        <section>
+          <span class="kicker">Business value &amp; ROI</span>
+          <h2>Earlier, sharper, measurable</h2>
+          <div class="grid g3">
+            <div class="card stat"><div class="n">€/yr</div><div class="l">indicative revenue per opportunity</div></div>
+            <div class="card stat"><div class="n">Days→now</div><div class="l">act on signals sooner</div></div>
+            <div class="card stat"><div class="n">4 bands</div><div class="l">act · track · validate · hold</div></div>
+          </div>
+          <ul style="margin-top: 20px;">
+            <li><strong>Revenue:</strong> quantified pipeline value per company and across the portfolio (FX + cash-management fees + deposit NII).</li>
+            <li><strong>Productivity:</strong> RMs stop triaging noise and act on a ranked, evidence-backed shortlist.</li>
+            <li><strong>Scale:</strong> one engine, every sector, every European corridor — the same pipeline generalises beyond payments.</li>
+          </ul>
+        </section>
+
+        <!-- 9. DECATHLON -->
+        <section>
+          <span class="kicker">The Decathlon theme</span>
+          <h2>A 10-dimension digital twin — our tribute to the 10th anniversary</h2>
+          <div class="grid g2">
+            <div>
+              <p>Each company gets a <strong>Decathlon</strong> maturity twin across ten business dimensions — growth, funding, cross-border expansion, treasury, FX, payments, financing, regulatory, workforce, investor readiness.</p>
+              <p class="muted">It answers the question the score can't: <em>where is this company on its journey, and which banking need comes next?</em></p>
+            </div>
+            <div class="grid g2">
+              <div class="card"><h3>Current-state twin</h3><p>Maturity per dimension with the top driver behind each.</p></div>
+              <div class="card"><h3>Next-best-need</h3><p>Turns maturity into a concrete, timely banking conversation.</p></div>
+              <div class="card"><h3>Explainable</h3><p>Every dimension is evidence-linked and transparent.</p></div>
+              <div class="card"><h3>On-theme</h3><p>Ten dimensions for the Decathlon — form and substance aligned.</p></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 10. CRITERIA ALIGNMENT -->
+        <section>
+          <span class="kicker">Aligned to the assessment criteria</span>
+          <h2>Why this wins on every axis</h2>
+          <table class="crit">
+            <tr><th>Criterion</th><th>How DB LaunchPad AI delivers</th></tr>
+            <tr><td><strong>Strategic vision &amp; business value</strong></td><td>Turns DB's data into proactive advisory for a European bank; quantified € pipeline value; responsible-AI by design; grounded live tooling; on the Decathlon 10-dim theme.</td></tr>
+            <tr><td><strong>Solution architecture &amp; scalability</strong></td><td>FastAPI + Firestore + Cloud Run + WIF; RBAC, audit trail, no stored keys; deterministic scoring separated from LLM; generalises across sectors &amp; corridors; CI/CD with tests + security scans.</td></tr>
+            <tr><td><strong>Innovation &amp; technical excellence</strong></td><td>Multi-agent grounded discovery + 10-dim digital twin + corroboration + semantic guardrails; 132 tests; ethics-by-design; every output explainable.</td></tr>
+            <tr><td><strong>UX &amp; adoption potential</strong></td><td>RM-first workflow, "3 clicks to score"; ranked portfolio, live search, compare, governance; transparent, trust-building interaction users will actually adopt.</td></tr>
+          </table>
+        </section>
+
+        <!-- 11. ROADMAP + CLOSE -->
+        <section data-background-gradient="linear-gradient(150deg,#071638,#1a52d6)">
+          <span class="kicker">What's next</span>
+          <h2>Built today · ready to grow</h2>
+          <div class="grid g3" style="margin-bottom: 22px;">
+            <div class="card"><h3>More opportunity types</h3><p>Beyond expansion — financing, hedging, payroll, IPO-readiness triggers.</p></div>
+            <div class="card"><h3>Learning loop</h3><p>RM outcomes feed back to tune weights — governed, auditable, improving.</p></div>
+            <div class="card"><h3>Deeper integration</h3><p>CRM &amp; core-banking connectors; vector search over signals; observability.</p></div>
+          </div>
+          <h1 style="font-size: 1.5em;">Grounded. Explainable. Governed. Live.</h1>
+          <p class="big">DB LaunchPad AI — from a public signal to a defensible RM action, with an audit trail behind every number.</p>
+          <div class="footer-note"><span>Team toruk-makto</span><span>Thank you — questions welcome</span></div>
+        </section>
+
+        <!-- 12. Q&A APPENDIX -->
+        <section>
+          <span class="kicker">Anticipated questions</span>
+          <h2>Judge Q&amp;A — straight answers</h2>
+          <div class="grid g2" style="font-size: 0.92em;">
+            <div class="card"><h3>Is the data real or synthetic?</h3><p>Discovery is live &amp; grounded with citations. Synthetic seeds are a labelled demo-safety net. Private banking fields are honestly absent — never fabricated.</p></div>
+            <div class="card"><h3>Could the AI hallucinate a recommendation?</h3><p>The score is deterministic; the LLM only phrases prose and is screened by a guardrail. A human approves before anything is used.</p></div>
+            <div class="card"><h3>Is it secure &amp; compliant for a bank?</h3><p>RBAC, JWT, Workload Identity Federation (no stored keys), full audit trail, governed weight changes, secret/dependency scanning in CI.</p></div>
+            <div class="card"><h3>Will it scale across Europe?</h3><p>Stateless service on Cloud Run + Firestore; one engine across sectors &amp; corridors; connectors are additive and feature-flagged.</p></div>
+            <div class="card"><h3>How is bias mitigated?</h3><p>Transparent weights, evidence per driver, missing-data penalties, corroboration checks — decisions are inspectable and challengeable.</p></div>
+            <div class="card"><h3>What did you actually build vs. plan?</h3><p>All shown features are built, tested (132) and deployed. Roadmap items are clearly separated as future scope.</p></div>
+          </div>
+        </section>
+      </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+    <script>
+      Reveal.initialize({ hash: true, transition: 'slide', slideNumber: 'c/t', width: 1280, height: 760, margin: 0.04 });
+    </script>
+  </body>
+</html>

@@ -16,14 +16,13 @@ from ..store import Store
 
 logger = logging.getLogger(__name__)
 
-# A small, cross-border-payments-relevant default sector list. Kept to 4-5
-# sectors so a live seed stays fast enough for a demo startup path.
+# A small, cross-border-payments-relevant default sector list. Each grounded
+# sector discovery takes ~60-70s, so the default is kept to 2 sectors to stay
+# well under Cloud Run's request timeout. Callers may pass more sectors
+# explicitly (best run as several smaller requests).
 DEFAULT_SECTORS: list[str] = [
     "cross-border B2B payments",
-    "e-commerce marketplaces",
     "SaaS fintech",
-    "logistics & supply chain",
-    "digital health",
 ]
 
 
@@ -31,7 +30,7 @@ def seed_live_portfolio(
     store: Store,
     actor: str,
     sectors: list[str] | None = None,
-    per_sector: int = 3,
+    per_sector: int = 2,
 ) -> dict:
     """Discover and persist real startups across ``sectors`` via ``run_discovery``.
 
