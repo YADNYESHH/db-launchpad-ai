@@ -77,6 +77,7 @@ al.azure.com). Use your SSO ID and the **initial password** given in your briefi
 **APIs:**
 The following APIs have been activated on your project. You cannot activate others.
 * aiplatform.googleapis.com
+* apigateway.googleapis.com
 * appengine.googleapis.com
 * appengineflex.googleapis.com
 * appenginereporting.googleapis.com
@@ -96,6 +97,7 @@ The following APIs have been activated on your project. You cannot activate othe
 * dataflow.googleapis.com
 * dataproc.googleapis.com
 * datastudio.googleapis.com
+* developerconnect.googleapis.com
 * dialogflow.googleapis.com
 * discoveryengine.googleapis.com
 * documentai.googleapis.com
@@ -138,6 +140,7 @@ Every team member has the following roles at the project level:
 * roles/aiplatform.migrator
 * roles/aiplatform.tensorboardWebAppUser
 * roles/aiplatform.user
+* roles/apigateway.admin
 * roles/appengine.appAdmin
 * roles/appengine.appCreator
 * roles/artifactregistry.admin
@@ -167,6 +170,7 @@ Every team member has the following roles at the project level:
 * roles/dataproc.editor
 * roles/datastore.owner
 * roles/datastudio.viewer
+* roles/developerconnect.admin
 * roles/dialogflow.admin
 * roles/discoveryengine.admin
 * roles/discoveryengine.notebookOwner
@@ -229,6 +233,7 @@ Workload SA (`workload@hack-team-toruk-makto.iam.gserviceaccount.com`): Attach t
 * roles/dataproc.worker
 * roles/datastore.user
 * roles/datastudio.editor
+* roles/developerconnect.user
 * roles/dialogflow.client
 * roles/dialogflow.reader
 * roles/discoveryengine.admin
@@ -241,8 +246,7 @@ Workload SA (`workload@hack-team-toruk-makto.iam.gserviceaccount.com`): Attach t
 * roles/logging.logWriter
 * roles/monitoring.metricWriter
 * roles/notebooks.runner
-* roles/pubsub.publisher
-* roles/pubsub.subscriber
+* roles/pubsub.editor
 * roles/retail.editor
 * roles/run.invoker
 * roles/secretmanager.secretAccessor
@@ -251,7 +255,7 @@ Workload SA (`workload@hack-team-toruk-makto.iam.gserviceaccount.com`): Attach t
 * roles/serviceusage.serviceUsageConsumer
 * roles/spanner.databaseUser
 * roles/speech.client
-* roles/storage.objectViewer
+* roles/storage.objectUser
 * roles/storagetransfer.transferAgent
 * roles/storagetransfer.user
 * roles/timeseriesinsights.datasetsEditor
