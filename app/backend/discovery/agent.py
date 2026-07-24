@@ -181,9 +181,12 @@ _WORKING_COMBO: tuple[str, str] | None = None
 
 def _candidate_models() -> list[str]:
     """Model IDs to try, in order, de-duplicated. The hackathon platform serves
-    ``gemini-2.5-flash`` (see GCP_SERVICE_ACCOUNTS.md); older 2.0 IDs 404 on this
-    project, so a retired/incorrect ``VERTEX_MODEL`` self-heals to an available one."""
-    ordered = [_MODEL_NAME, "gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.0-flash", "gemini-flash-latest"]
+    ``gemini-2.5-flash`` (see GCP_SERVICE_ACCOUNTS.md). ``gemini-2.0-flash`` is
+    deliberately NOT in this list: it 404s on this project and every attempt
+    against it was pure wasted latency on the request path (this was a real
+    contributor to live discovery appearing to hang - see ATTEMPT_TIMEOUT_SECONDS
+    below for the other half of that fix)."""
+    ordered = [_MODEL_NAME, "gemini-2.5-flash", "gemini-2.5-pro", "gemini-flash-latest"]
     seen: list[str] = []
     for m in ordered:
         if m and m not in seen:
@@ -195,14 +198,26 @@ def _grounding_locations() -> list[str]:
     """Locations to try for grounded generation, in order, de-duplicated.
 
     ``global`` has the broadest model availability (per the platform docs) so we
-    try it first, then the configured region, then other common regions.
+    try it first, then the configured region. Trimmed from 4 candidates to 2:
+    the previous list (global, configured region, us-central1, europe-west4)
+    combined with 4 candidate models meant up to 20 serial network round-trips
+    with no per-attempt timeout on a single request - see the fix below.
     """
-    ordered = ["global", _LOCATION, "us-central1", "europe-west4"]
+    ordered = ["global", _LOCATION]
     seen: list[str] = []
     for loc in ordered:
         if loc and loc not in seen:
             seen.append(loc)
     return seen
+
+
+# Hard per-attempt cap: a single (model, region) combination gets this long to
+# either succeed or fail before we move on. Without this, a hanging or slow
+# combination could block the entire request indefinitely - this was confirmed
+# live (a diagnostics call did not return within 60 seconds). Worst case with
+# the trimmed matrix above is now bounded at roughly
+# len(models) * len(locations) * ATTEMPT_TIMEOUT_SECONDS.
+ATTEMPT_TIMEOUT_SECONDS = 12
 
 
 class _GroundedModel:
@@ -224,10 +239,15 @@ class _GroundedModel:
         self.last_model: str | None = None
 
     def generate_content(self, prompt: str):
+        import concurrent.futures
+
         from google import genai
         from google.genai import types
 
         global _WORKING_COMBO
+        # First line of defense: ask the SDK's own transport for a bounded
+        # timeout (milliseconds) so a slow socket doesn't hang forever.
+        http_options = types.HttpOptions(timeout=ATTEMPT_TIMEOUT_SECONDS * 1000)
         config = types.GenerateContentConfig(
             tools=[types.Tool(google_search=types.GoogleSearch())],
             temperature=0.2,
@@ -242,26 +262,51 @@ class _GroundedModel:
             for model in _candidate_models():
                 combos.append((model, region))
 
+        def _call_once(model: str, region: str):
+            client = genai.Client(
+                vertexai=True, project=_PROJECT_ID, location=region, http_options=http_options
+            )
+            return client.models.generate_content(model=model, contents=prompt, config=config)
+
         last_exc: Exception | None = None
         tried: set[tuple[str, str]] = set()
+        # Second line of defense: a hard wall-clock cap per attempt, independent
+        # of whether the SDK/transport actually honours http_options above. This
+        # is what turns "one bad region can hang the whole request" into
+        # "one bad region costs at most ATTEMPT_TIMEOUT_SECONDS, then we move on" -
+        # confirmed live that the previous version had no such bound at all.
         for model, region in combos:
             if (model, region) in tried:
                 continue
             tried.add((model, region))
             self.last_model, self.last_region = model, region
+            # Deliberately NOT a `with ThreadPoolExecutor(...) as executor:` block:
+            # the context manager's __exit__ calls shutdown(wait=True), which would
+            # block until the submitted call finishes even after our own timeout
+            # fires below - silently defeating the entire point of this timeout.
+            # shutdown(wait=False) lets us move on immediately; a hung call is
+            # abandoned (Python cannot forcibly kill a thread) rather than blocking
+            # the request that's waiting on an answer.
+            executor = concurrent.futures.ThreadPoolExecutor(max_workers=1)
             try:
-                client = genai.Client(vertexai=True, project=_PROJECT_ID, location=region)
-                response = client.models.generate_content(
-                    model=model, contents=prompt, config=config
-                )
+                future = executor.submit(_call_once, model, region)
+                response = future.result(timeout=ATTEMPT_TIMEOUT_SECONDS)
                 self.success_model, self.success_region = model, region
                 _WORKING_COMBO = (model, region)
                 return response
+            except concurrent.futures.TimeoutError as exc:
+                last_exc = exc
+                logger.warning(
+                    "Grounded generation TIMED OUT after %ss (model=%s, region=%s).",
+                    ATTEMPT_TIMEOUT_SECONDS, model, region,
+                )
             except Exception as exc:  # noqa: BLE001 - try the next model/region
                 last_exc = exc
                 logger.warning(
                     "Grounded generation failed (model=%s, region=%s).", model, region, exc_info=True
                 )
+            finally:
+                executor.shutdown(wait=False)
         if last_exc is not None:
             raise last_exc
         raise RuntimeError("No grounding model/region available.")
