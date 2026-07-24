@@ -176,14 +176,56 @@ def _clean_signals(raw_signals) -> list[dict]:
 
 
 
-def _get_grounded_model():
-    import vertexai
-    from vertexai.generative_models import GenerativeModel, Tool
-    from vertexai.generative_models import grounding as grounding_mod
+def _grounding_locations() -> list[str]:
+    """Locations to try for grounded generation, in order, de-duplicated.
 
-    vertexai.init(project=_PROJECT_ID, location=_LOCATION)
-    search_tool = Tool.from_google_search_retrieval(grounding_mod.GoogleSearchRetrieval())
-    return GenerativeModel(_MODEL_NAME, tools=[search_tool])
+    Gemini 2.0 grounding via ``google_search`` is not offered in every region,
+    so we try the configured region first, then fall back to the global and
+    us-central1 endpoints before giving up.
+    """
+    ordered = [_LOCATION, "global", "us-central1"]
+    seen: list[str] = []
+    for loc in ordered:
+        if loc and loc not in seen:
+            seen.append(loc)
+    return seen
+
+
+class _GroundedModel:
+    """Thin adapter exposing ``generate_content(prompt)`` over the google-genai
+    SDK with the Gemini-2.0 ``google_search`` grounding tool.
+
+    IMPORTANT: Gemini 2.0 models require the ``google_search`` tool; the legacy
+    ``google_search_retrieval`` tool is only valid for Gemini 1.5 and is
+    rejected by 2.0 models (this was the cause of live discovery failing in
+    production). We try each candidate region until one succeeds.
+    """
+
+    def generate_content(self, prompt: str):
+        from google import genai
+        from google.genai import types
+
+        config = types.GenerateContentConfig(
+            tools=[types.Tool(google_search=types.GoogleSearch())],
+            temperature=0.2,
+        )
+        last_exc: Exception | None = None
+        for loc in _grounding_locations():
+            try:
+                client = genai.Client(vertexai=True, project=_PROJECT_ID, location=loc)
+                return client.models.generate_content(
+                    model=_MODEL_NAME, contents=prompt, config=config
+                )
+            except Exception as exc:  # noqa: BLE001 - try the next region
+                last_exc = exc
+                logger.warning("Grounded generation failed in region %s.", loc, exc_info=True)
+        if last_exc is not None:
+            raise last_exc
+        raise RuntimeError("No grounding region available.")
+
+
+def _get_grounded_model():
+    return _GroundedModel()
 
 
 def _collect_citations(response) -> list[str]:
