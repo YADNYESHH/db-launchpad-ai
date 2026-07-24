@@ -149,7 +149,7 @@ jobs:
             --project "${PROJECT_ID}" \
             --service-account "${WORKLOAD_SA_EMAIL}" \
             --allow-unauthenticated \
-            --set-env-vars "^;^STORE_BACKEND=firestore;PROJECT_ID=${PROJECT_ID};VERTEX_LOCATION=${REGION};ALLOWED_ORIGINS=${ALLOWED_ORIGINS};BUILD_SHA=${{ github.sha }}" \
+            --set-env-vars "^;^STORE_BACKEND=firestore;PROJECT_ID=${PROJECT_ID};VERTEX_LOCATION=${REGION};VERTEX_MODEL=gemini-2.5-flash;ALLOWED_ORIGINS=${ALLOWED_ORIGINS};BUILD_SHA=${{ github.sha }}" \
             --set-secrets "JWT_SECRET_KEY=launchpad-jwt-secret:latest"
 
           url=$(gcloud run services describe "${SERVICE_NAME}" --region "${REGION}" --project "${PROJECT_ID}" --format="value(status.url)")

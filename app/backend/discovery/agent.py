@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 _PROJECT_ID = os.environ.get("PROJECT_ID", "hack-team-toruk-makto")
 _LOCATION = os.environ.get("VERTEX_LOCATION", "europe-west1")
-_MODEL_NAME = os.environ.get("VERTEX_MODEL", "gemini-2.0-flash-001")
+_MODEL_NAME = os.environ.get("VERTEX_MODEL", "gemini-2.5-flash")
 
 
 @dataclass
@@ -176,14 +176,28 @@ def _clean_signals(raw_signals) -> list[dict]:
 
 
 
+_WORKING_COMBO: tuple[str, str] | None = None
+
+
+def _candidate_models() -> list[str]:
+    """Model IDs to try, in order, de-duplicated. The hackathon platform serves
+    ``gemini-2.5-flash`` (see GCP_SERVICE_ACCOUNTS.md); older 2.0 IDs 404 on this
+    project, so a retired/incorrect ``VERTEX_MODEL`` self-heals to an available one."""
+    ordered = [_MODEL_NAME, "gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.0-flash", "gemini-flash-latest"]
+    seen: list[str] = []
+    for m in ordered:
+        if m and m not in seen:
+            seen.append(m)
+    return seen
+
+
 def _grounding_locations() -> list[str]:
     """Locations to try for grounded generation, in order, de-duplicated.
 
-    Gemini 2.0 grounding via ``google_search`` is not offered in every region,
-    so we try the configured region first, then fall back to the global and
-    us-central1 endpoints before giving up.
+    ``global`` has the broadest model availability (per the platform docs) so we
+    try it first, then the configured region, then other common regions.
     """
-    ordered = [_LOCATION, "global", "us-central1"]
+    ordered = ["global", _LOCATION, "us-central1", "europe-west4"]
     seen: list[str] = []
     for loc in ordered:
         if loc and loc not in seen:
@@ -203,34 +217,54 @@ class _GroundedModel:
 
     def __init__(self) -> None:
         # Populated by generate_content so callers (e.g. diagnostics) can report
-        # which region actually served the request, or which was tried last.
+        # which model/region actually served the request, or what was tried last.
         self.success_region: str | None = None
+        self.success_model: str | None = None
         self.last_region: str | None = None
+        self.last_model: str | None = None
 
     def generate_content(self, prompt: str):
         from google import genai
         from google.genai import types
 
+        global _WORKING_COMBO
         config = types.GenerateContentConfig(
             tools=[types.Tool(google_search=types.GoogleSearch())],
             temperature=0.2,
         )
+
+        # Try the last-known-good (model, region) first, then the full matrix so
+        # a wrong/retired model ID or region self-heals to an available one.
+        combos: list[tuple[str, str]] = []
+        if _WORKING_COMBO is not None:
+            combos.append(_WORKING_COMBO)
+        for region in _grounding_locations():
+            for model in _candidate_models():
+                combos.append((model, region))
+
         last_exc: Exception | None = None
-        for loc in _grounding_locations():
-            self.last_region = loc
+        tried: set[tuple[str, str]] = set()
+        for model, region in combos:
+            if (model, region) in tried:
+                continue
+            tried.add((model, region))
+            self.last_model, self.last_region = model, region
             try:
-                client = genai.Client(vertexai=True, project=_PROJECT_ID, location=loc)
+                client = genai.Client(vertexai=True, project=_PROJECT_ID, location=region)
                 response = client.models.generate_content(
-                    model=_MODEL_NAME, contents=prompt, config=config
+                    model=model, contents=prompt, config=config
                 )
-                self.success_region = loc
+                self.success_model, self.success_region = model, region
+                _WORKING_COMBO = (model, region)
                 return response
-            except Exception as exc:  # noqa: BLE001 - try the next region
+            except Exception as exc:  # noqa: BLE001 - try the next model/region
                 last_exc = exc
-                logger.warning("Grounded generation failed in region %s.", loc, exc_info=True)
+                logger.warning(
+                    "Grounded generation failed (model=%s, region=%s).", model, region, exc_info=True
+                )
         if last_exc is not None:
             raise last_exc
-        raise RuntimeError("No grounding region available.")
+        raise RuntimeError("No grounding model/region available.")
 
 
 def _get_grounded_model():
@@ -297,6 +331,7 @@ def diagnose_discovery(sector: str = "cross-border payments") -> dict:
         "ok": False,
         "region": None,
         "model": _MODEL_NAME,
+        "model_used": None,
         "error_type": None,
         "error_message": None,
         "has_text": False,
@@ -320,6 +355,7 @@ def diagnose_discovery(sector: str = "cross-border payments") -> dict:
         response = model.generate_content(prompt)
     except Exception as exc:  # noqa: BLE001 - SURFACE the real (last) failure, never raise
         result["region"] = getattr(model, "last_region", None)
+        result["model_used"] = getattr(model, "last_model", None)
         result["error_type"] = type(exc).__name__
         result["error_message"] = str(exc)[:500]
         return result
@@ -329,6 +365,7 @@ def diagnose_discovery(sector: str = "cross-border payments") -> dict:
     result.update(
         ok=True,
         region=getattr(model, "success_region", None),
+        model_used=getattr(model, "success_model", None),
         has_text=bool(text),
         num_citations=len(citations),
         raw_preview=text[:300] if text else None,

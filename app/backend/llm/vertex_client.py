@@ -15,27 +15,25 @@ logger = logging.getLogger(__name__)
 
 _PROJECT_ID = os.environ.get("PROJECT_ID", "hack-team-toruk-makto")
 _LOCATION = os.environ.get("VERTEX_LOCATION", "europe-west1")
-_MODEL_NAME = os.environ.get("VERTEX_MODEL", "gemini-2.0-flash-001")
+_MODEL_NAME = os.environ.get("VERTEX_MODEL", "gemini-2.5-flash")
 
-_model = None
+_client = None
 
 
-def _get_model():
-    global _model
-    if _model is not None:
-        return _model
-    import vertexai
-    from vertexai.generative_models import GenerativeModel
+def _get_client():
+    global _client
+    if _client is not None:
+        return _client
+    from google import genai
 
-    vertexai.init(project=_PROJECT_ID, location=_LOCATION)
-    _model = GenerativeModel(_MODEL_NAME)
-    return _model
+    _client = genai.Client(vertexai=True, project=_PROJECT_ID, location=_LOCATION)
+    return _client
 
 
 def generate_narrative(prompt: str) -> tuple[str | None, bool]:
     try:
-        model = _get_model()
-        response = model.generate_content(prompt)
+        client = _get_client()
+        response = client.models.generate_content(model=_MODEL_NAME, contents=prompt)
         text = (response.text or "").strip()
         if not text:
             return None, False
