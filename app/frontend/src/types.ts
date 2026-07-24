@@ -68,6 +68,7 @@ export interface ProfileBundle {
   payment: PaymentProfile | null
   pain: PainPointProfile | null
   signals: ExpansionSignal[]
+  score: ScoreRecord | null
 }
 
 export interface DriverScore {
