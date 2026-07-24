@@ -1,0 +1,241 @@
+.wa-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 1.5rem;
+  background: #ffffff;
+  border: 1px solid #e2e6ec;
+  border-radius: 10px;
+  color: #1c2530;
+}
+
+.wa-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.wa-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 650;
+}
+
+.wa-subtitle {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #5b6672;
+  max-width: 60ch;
+  line-height: 1.45;
+}
+
+.wa-alert {
+  padding: 0.65rem 0.9rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  border: 1px solid transparent;
+}
+
+.wa-alert-success {
+  background: #ecfdf3;
+  border-color: #abefc6;
+  color: #067647;
+}
+
+.wa-alert-error {
+  background: #fef3f2;
+  border-color: #fecdca;
+  color: #b42318;
+}
+
+.wa-state {
+  padding: 1.5rem;
+  text-align: center;
+  color: #5b6672;
+  font-size: 0.9rem;
+  background: #f7f9fb;
+  border: 1px dashed #d7dde5;
+  border-radius: 8px;
+}
+
+.wa-table-wrap {
+  overflow-x: auto;
+  border: 1px solid #e6e9ee;
+  border-radius: 8px;
+}
+
+.wa-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.wa-table thead th {
+  text-align: left;
+  padding: 0.65rem 0.85rem;
+  background: #f4f6f9;
+  color: #45505d;
+  font-weight: 600;
+  border-bottom: 1px solid #e2e6ec;
+  white-space: nowrap;
+}
+
+.wa-table tbody td {
+  padding: 0.7rem 0.85rem;
+  border-bottom: 1px solid #eef1f5;
+  vertical-align: top;
+}
+
+.wa-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.wa-row-active {
+  background: #f6faf7;
+}
+
+.wa-version {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.8125rem;
+  background: #f2f4f7;
+  padding: 0.15rem 0.4rem;
+  border-radius: 5px;
+}
+
+.wa-badge {
+  display: inline-block;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.wa-badge-active {
+  background: #dcfae6;
+  color: #067647;
+}
+
+.wa-badge-inactive {
+  background: #eceff3;
+  color: #667085;
+}
+
+.wa-reason {
+  max-width: 32ch;
+  color: #3a4552;
+  line-height: 1.4;
+}
+
+.wa-muted {
+  color: #98a2b3;
+}
+
+.wa-col-action {
+  white-space: nowrap;
+  text-align: right;
+}
+
+.wa-btn {
+  border: 1px solid transparent;
+  border-radius: 7px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  padding: 0.45rem 0.9rem;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.wa-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.wa-btn-primary {
+  background: #1a56db;
+  color: #ffffff;
+}
+
+.wa-btn-primary:hover:not(:disabled) {
+  background: #1547b8;
+}
+
+.wa-btn-secondary {
+  background: #ffffff;
+  color: #1a56db;
+  border-color: #c4d2f4;
+}
+
+.wa-btn-secondary:hover:not(:disabled) {
+  background: #f4f7fe;
+}
+
+.wa-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1.25rem;
+  background: #f9fafb;
+  border: 1px solid #e6e9ee;
+  border-radius: 8px;
+}
+
+.wa-form-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 650;
+}
+
+.wa-form-hint {
+  margin: 0 0 0.25rem;
+  font-size: 0.8125rem;
+  color: #5b6672;
+  line-height: 1.45;
+}
+
+.wa-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #344054;
+}
+
+.wa-textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid #cfd6df;
+  border-radius: 7px;
+  font: inherit;
+  font-size: 0.875rem;
+  resize: vertical;
+  color: #1c2530;
+  background: #ffffff;
+}
+
+.wa-textarea:focus {
+  outline: none;
+  border-color: #1a56db;
+  box-shadow: 0 0 0 3px rgba(26, 86, 219, 0.15);
+}
+
+.wa-form-error {
+  font-size: 0.8125rem;
+  color: #b42318;
+}
+
+.wa-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.25rem;
+}
+
+.wa-note {
+  margin: 0;
+  padding: 0.75rem 0.9rem;
+  font-size: 0.8125rem;
+  color: #5b6672;
+  background: #f7f9fb;
+  border: 1px solid #e6e9ee;
+  border-radius: 8px;
+  line-height: 1.45;
+}

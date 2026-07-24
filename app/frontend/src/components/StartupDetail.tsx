@@ -5,8 +5,11 @@ import ScoreCard from './ScoreCard'
 import RecommendationPanel from './RecommendationPanel'
 import AuditTrail from './AuditTrail'
 import SummaryStrip from './SummaryStrip'
+import DecathlonGrid from './DecathlonGrid'
+import PipelineValuePanel from './PipelineValuePanel'
+import AgentFlowPanel from './AgentFlowPanel'
 
-type Tab = 'overview' | 'scorecard' | 'recommendation' | 'audit'
+type Tab = 'overview' | 'twin' | 'scorecard' | 'recommendation' | 'audit'
 
 export default function StartupDetail({ startupId, role }: { startupId: string; role: Role }) {
   const [bundle, setBundle] = useState<ProfileBundle | null>(null)
@@ -90,6 +93,9 @@ export default function StartupDetail({ startupId, role }: { startupId: string; 
         <button className={tab === 'overview' ? 'active' : ''} onClick={() => setTab('overview')}>
           Overview & evidence
         </button>
+        <button className={tab === 'twin' ? 'active' : ''} onClick={() => setTab('twin')}>
+          Twin & value
+        </button>
         <button className={tab === 'scorecard' ? 'active' : ''} onClick={() => setTab('scorecard')} disabled={!score}>
           Scorecard
         </button>
@@ -165,6 +171,28 @@ export default function StartupDetail({ startupId, role }: { startupId: string; 
             </tbody>
           </table>
 
+          {profile.data_source_type === 'live_grounded' && (
+            <div className="discovery-provenance">
+              <h3>Live discovery provenance</h3>
+              {profile.discovery_note && <p>{profile.discovery_note}</p>}
+              {profile.source_citations && profile.source_citations.length > 0 && (
+                <ul className="citation-list">
+                  {profile.source_citations.map((c, i) => (
+                    <li key={i}>
+                      {/^https?:\/\//.test(c) ? (
+                        <a href={c} target="_blank" rel="noreferrer">
+                          {c}
+                        </a>
+                      ) : (
+                        c
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
+
           <h3>Signal evidence</h3>
           {signals.length === 0 && <p>No signals ingested for this startup.</p>}
           <table className="driver-table">
@@ -193,6 +221,14 @@ export default function StartupDetail({ startupId, role }: { startupId: string; 
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {tab === 'twin' && (
+        <div className="twin-tab">
+          <AgentFlowPanel bundle={bundle} />
+          <DecathlonGrid decathlon={bundle.decathlon} />
+          <PipelineValuePanel pipelineValue={bundle.pipeline_value} />
         </div>
       )}
 

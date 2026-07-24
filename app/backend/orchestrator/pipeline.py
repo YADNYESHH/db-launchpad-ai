@@ -5,6 +5,7 @@ import uuid
 from datetime import datetime, timezone
 
 from ..discovery import discover_startups
+from ..discovery.corroboration import assess_corroboration
 from ..discovery.mapper import to_models
 from ..models import ApprovalStatus, RecommendationRecord, ScoreRecord
 from ..models.weights import default_weight_config
@@ -61,6 +62,14 @@ def run_discovery(store: Store, sector: str, actor: str, limit: int = 4) -> dict
             store.save_signals(profile.startup_id, signals)
         existing.append(profile)
 
+        # Corroboration: assess how well-supported each discovered signal_type
+        # is (per signal_type, distinct sources), so the API can surface honest
+        # "single-source / directional" caveats to the UI.
+        corroboration = assess_corroboration(
+            [{"signal_type": s.signal_type, "source_label": s.source_label} for s in signals],
+            profile.source_citations,
+        )
+
         log_event(
             store,
             profile.startup_id,
@@ -83,6 +92,7 @@ def run_discovery(store: Store, sector: str, actor: str, limit: int = 4) -> dict
                 "final_score": record.final_score,
                 "priority_band": record.priority_band.value,
                 "score_id": score_id,
+                "corroboration_notes": corroboration.notes,
             }
         )
 

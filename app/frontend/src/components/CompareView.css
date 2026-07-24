@@ -1,0 +1,227 @@
+.cmp-root {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* Selector -------------------------------------------------------------- */
+.cmp-selector {
+  border: 1px solid #e2e6ee;
+  border-radius: 10px;
+  background: #fff;
+  padding: 1rem 1.25rem;
+}
+
+.cmp-selector-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.cmp-title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 650;
+  color: #1c2430;
+}
+
+.cmp-selector-count {
+  font-size: 0.8rem;
+  color: #6b7686;
+  white-space: nowrap;
+}
+
+.cmp-selector-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+}
+
+.cmp-selector-item {
+  margin: 0;
+}
+
+.cmp-selector-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.7rem;
+  border: 1px solid #dbe0ea;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  background: #f7f9fc;
+  transition: border-color 0.12s ease, background 0.12s ease;
+}
+
+.cmp-selector-label:hover {
+  border-color: #b7c1d4;
+}
+
+.cmp-selector-label input {
+  cursor: pointer;
+}
+
+.cmp-selector-label-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cmp-selector-label-disabled input {
+  cursor: not-allowed;
+}
+
+.cmp-selector-name {
+  font-weight: 550;
+  color: #26303d;
+}
+
+/* Hint ------------------------------------------------------------------ */
+.cmp-hint {
+  margin: 0;
+  padding: 2rem 1rem;
+  text-align: center;
+  color: #6b7686;
+  border: 1px dashed #cfd6e2;
+  border-radius: 10px;
+  background: #fafbfd;
+}
+
+/* Table ----------------------------------------------------------------- */
+.cmp-table-wrap {
+  overflow-x: auto;
+  border: 1px solid #e2e6ee;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.cmp-table {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 480px;
+  font-size: 0.9rem;
+}
+
+.cmp-table th,
+.cmp-table td {
+  padding: 0.7rem 0.9rem;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid #eef1f6;
+}
+
+.cmp-metric-head,
+.cmp-startup-head {
+  background: #f4f6fb;
+  font-weight: 650;
+  color: #1c2430;
+  position: sticky;
+  top: 0;
+}
+
+.cmp-metric-cell {
+  font-weight: 600;
+  color: #4a5568;
+  white-space: nowrap;
+  background: #fafbfd;
+}
+
+.cmp-cell {
+  color: #26303d;
+}
+
+.cmp-table tbody tr:last-child th,
+.cmp-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.cmp-leader {
+  font-weight: 700;
+  color: #12603a;
+}
+
+.cmp-leader-mark {
+  color: #1a8a52;
+  font-size: 0.7rem;
+}
+
+.cmp-empty {
+  color: #9aa4b2;
+}
+
+/* Decathlon list -------------------------------------------------------- */
+.cmp-decathlon {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.cmp-decathlon li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.cmp-decathlon-label {
+  color: #37424f;
+}
+
+.cmp-decathlon-score {
+  font-weight: 650;
+  color: #1c2430;
+}
+
+/* Priority pills -------------------------------------------------------- */
+.cmp-pill {
+  display: inline-block;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.cmp-pill-sm {
+  font-size: 0.68rem;
+  padding: 0.1rem 0.45rem;
+}
+
+.cmp-pill-high {
+  background: #e7f6ee;
+  color: #12603a;
+}
+
+.cmp-pill-monitor {
+  background: #e6f0fb;
+  color: #1c4e86;
+}
+
+.cmp-pill-validate {
+  background: #fdf3e2;
+  color: #8a5a12;
+}
+
+.cmp-pill-none {
+  background: #eef0f4;
+  color: #5a6472;
+}
+
+@media (max-width: 640px) {
+  .cmp-selector {
+    padding: 0.85rem 1rem;
+  }
+
+  .cmp-table {
+    font-size: 0.85rem;
+  }
+}

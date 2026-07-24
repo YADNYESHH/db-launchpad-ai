@@ -1,0 +1,80 @@
+.pipe-panel {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 20px 22px;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+}
+
+.pipe-placeholder {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
+.pipe-heading {
+  margin: 0 0 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.pipe-headline {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 18px;
+}
+
+.pipe-figure {
+  font-size: 2.25rem;
+  font-weight: 700;
+  line-height: 1.1;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+}
+
+.pipe-caption {
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.pipe-breakdown {
+  margin: 0 0 16px;
+  padding: 0;
+  border-top: 1px solid #f1f5f9;
+}
+
+.pipe-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.pipe-row-label {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #334155;
+}
+
+.pipe-row-value {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #0f172a;
+  font-variant-numeric: tabular-nums;
+}
+
+.pipe-basis {
+  margin: 0;
+  font-size: 0.78rem;
+  font-style: italic;
+  line-height: 1.4;
+  color: #94a3b8;
+}

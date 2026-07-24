@@ -3,6 +3,7 @@ kept separate from the domain models in this package's other modules."""
 
 from pydantic import BaseModel
 
+from ..pipeline_value import PipelineValue
 from ..scoring.decathlon import DecathlonTwin
 from .enums import ApprovalStatus
 from .profile import ExpansionSignal, PainPointProfile, PaymentProfile, StartupProfile
@@ -28,6 +29,9 @@ class ProfileBundle(BaseModel):
     # 10-dimension Decathlon digital-twin maturity view (current-state, distinct
     # from the opportunity score).
     decathlon: DecathlonTwin | None = None
+    # Indicative annual bank revenue estimate for this startup (never a
+    # commitment). Present whenever the profile can be estimated.
+    pipeline_value: PipelineValue | None = None
 
 
 class DiscoveryRequest(BaseModel):

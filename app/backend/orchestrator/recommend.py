@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 
 from ..llm.guardrails import scan_for_banned_phrases
 from ..llm.vertex_client import generate_narrative
+from ..discovery.corroboration import assess_corroboration
 from ..models import (
     ApprovalStatus,
     ConfidenceBand,
@@ -87,7 +88,11 @@ def _build_product_themes(pain: PainPointProfile | None) -> list[str]:
     return themes
 
 
-def _build_caveats(score_record: ScoreRecord, signals: list[ExpansionSignal]) -> list[str]:
+def _build_caveats(
+    score_record: ScoreRecord,
+    signals: list[ExpansionSignal],
+    profile: StartupProfile,
+) -> list[str]:
     caveats = []
     if score_record.missing_data_flags:
         caveats.append(f"Missing or incomplete data for: {', '.join(score_record.missing_data_flags)}.")
@@ -107,6 +112,19 @@ def _build_caveats(score_record: ScoreRecord, signals: list[ExpansionSignal]) ->
     if freshness_issue:
         caveats.append(freshness_issue)
     caveats.extend(find_duplicate_signals(signals))
+
+    # Corroboration: flag any signal_type that rests on a single distinct
+    # source so the brief stays honest about directional-only evidence.
+    corroboration = assess_corroboration(
+        [{"signal_type": s.signal_type, "source_label": s.source_label} for s in signals],
+        profile.source_citations,
+    )
+    for signal_type in corroboration.single_source_signal_types:
+        readable = signal_type.replace("_", " ")
+        caveats.append(
+            f"'{readable}' evidence is single-source and should be corroborated "
+            "with an independent source before acting on it alone."
+        )
 
     caveats.append("All data used is synthetic and has not been validated against real client records.")
     return caveats
@@ -201,7 +219,7 @@ def generate_recommendation(
         ],
         suggested_questions=_build_suggested_questions(pain),
         product_themes=_build_product_themes(pain),
-        caveats=_build_caveats(score_record, signals),
+        caveats=_build_caveats(score_record, signals, profile),
         approval_status=approval_status,
         generated_at=datetime.now(timezone.utc),
         llm_used=llm_used,

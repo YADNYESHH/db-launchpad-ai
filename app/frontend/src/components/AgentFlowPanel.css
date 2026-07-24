@@ -1,0 +1,132 @@
+.flow-panel {
+  background: #ffffff;
+  border: 1px solid #e2e6ec;
+  border-radius: 10px;
+  padding: 1.25rem 1.4rem 1.4rem;
+}
+
+.flow-header {
+  margin-bottom: 1rem;
+}
+
+.flow-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1a2230;
+}
+
+.flow-subtitle {
+  margin: 0.25rem 0 0;
+  font-size: 0.8rem;
+  color: #6b7686;
+  line-height: 1.4;
+}
+
+.flow-timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.flow-stage {
+  display: flex;
+  gap: 0.85rem;
+}
+
+.flow-marker {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 14px;
+  flex-shrink: 0;
+}
+
+.flow-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2px solid #b7c0cd;
+  margin-top: 4px;
+  z-index: 1;
+}
+
+.flow-connector {
+  flex: 1;
+  width: 2px;
+  background: #dfe4ea;
+  margin-top: 2px;
+}
+
+.flow-body {
+  flex: 1;
+  padding-bottom: 1.1rem;
+}
+
+.flow-stage:last-child .flow-body {
+  padding-bottom: 0;
+}
+
+.flow-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.flow-stage-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1a2230;
+}
+
+.flow-desc {
+  margin: 0.2rem 0 0;
+  font-size: 0.8rem;
+  color: #6b7686;
+  line-height: 1.4;
+}
+
+.flow-chip {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1;
+  padding: 0.32rem 0.55rem;
+  border-radius: 999px;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+
+.flow-chip-done {
+  background: #e5f4ea;
+  color: #1f7a44;
+  border-color: #bfe4cd;
+}
+
+.flow-chip-pending {
+  background: #eef0f3;
+  color: #6b7686;
+  border-color: #dbe0e6;
+}
+
+.flow-chip-live {
+  background: #e6f0fb;
+  color: #1d5fb0;
+  border-color: #c3ddf5;
+}
+
+.flow-chip-human {
+  background: #efe8fb;
+  color: #6b3fb5;
+  border-color: #dbccf3;
+}
+
+.flow-chip-neutral {
+  background: #f4f5f7;
+  color: #4a5567;
+  border-color: #e0e4ea;
+}

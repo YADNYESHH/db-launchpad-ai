@@ -1,0 +1,220 @@
+/*
+ * DashboardChrome.css — presentational styles for the branded dashboard
+ * chrome. All selectors are prefixed `lp-` and rely on tokens from theme.css.
+ */
+
+/* ---------- Header ---------- */
+.lp-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--lp-gap);
+  padding: 18px var(--lp-gap-lg);
+  background: linear-gradient(135deg, var(--lp-navy) 0%, var(--lp-navy-2) 100%);
+  color: var(--lp-text-on-navy);
+  border-radius: var(--lp-radius-lg);
+  box-shadow: var(--lp-shadow-navy);
+}
+
+.lp-header-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.lp-wordmark {
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  color: var(--lp-text-on-navy);
+}
+
+.lp-tagline {
+  font-size: 0.85rem;
+  color: var(--lp-text-on-navy-muted);
+}
+
+.lp-header-user {
+  display: flex;
+  align-items: center;
+  gap: var(--lp-gap);
+  flex-wrap: wrap;
+}
+
+.lp-header-identity {
+  display: flex;
+  align-items: center;
+  gap: var(--lp-gap-sm);
+  flex-wrap: wrap;
+}
+
+.lp-user-name {
+  font-weight: 600;
+  color: var(--lp-text-on-navy);
+}
+
+.lp-role-chip {
+  padding: 3px 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 999px;
+  background: var(--lp-navy-chip-bg);
+  border: 1px solid var(--lp-navy-chip-border);
+  color: var(--lp-text-on-navy);
+  white-space: nowrap;
+}
+
+.lp-signout-btn {
+  padding: 8px 16px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--lp-text-on-navy);
+  background: var(--lp-navy-chip-bg);
+  border: 1px solid var(--lp-navy-chip-border);
+  border-radius: var(--lp-radius-sm);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.lp-signout-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.lp-signout-btn:focus-visible {
+  outline: 2px solid var(--lp-accent);
+  outline-offset: 2px;
+}
+
+/* ---------- Policy chips ---------- */
+.lp-policy-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lp-gap-sm);
+}
+
+.lp-policy-chip {
+  padding: 4px 12px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--lp-navy);
+  background: var(--lp-surface-muted);
+  border: 1px solid var(--lp-border-strong);
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+/* ---------- Stat tiles ---------- */
+.lp-stat-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--lp-gap);
+}
+
+.lp-stat-tile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-gap-xs);
+  padding: var(--lp-gap);
+}
+
+.lp-stat-value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--lp-navy);
+}
+
+.lp-stat-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--lp-text-muted);
+}
+
+.lp-stat-hint {
+  font-size: 0.78rem;
+  color: var(--lp-grey);
+}
+
+/* ---------- Decision band legend ---------- */
+.lp-band-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lp-gap-lg);
+  padding: var(--lp-gap-sm) 0;
+}
+
+.lp-band-item {
+  display: flex;
+  align-items: center;
+  gap: var(--lp-gap-sm);
+}
+
+.lp-band-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex: none;
+}
+
+.lp-dot-high {
+  background: var(--lp-band-high);
+}
+
+.lp-dot-monitor {
+  background: var(--lp-band-monitor);
+}
+
+.lp-dot-validate {
+  background: var(--lp-band-validate);
+}
+
+.lp-dot-none {
+  background: var(--lp-band-none);
+}
+
+.lp-band-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--lp-text);
+}
+
+.lp-band-meaning {
+  font-size: 0.8rem;
+  color: var(--lp-text-muted);
+}
+
+/* ---------- Principles footer ---------- */
+.lp-footer {
+  display: flex;
+  justify-content: center;
+  padding: var(--lp-gap);
+  border-top: 1px solid var(--lp-border);
+}
+
+.lp-footer-text {
+  font-size: 0.82rem;
+  color: var(--lp-text-muted);
+  text-align: center;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 640px) {
+  .lp-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .lp-header-user {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .lp-stat-value {
+    font-size: 1.4rem;
+  }
+}

@@ -1,5 +1,7 @@
 import type {
   AuditEvent,
+  DiscoveryResponse,
+  PortfolioSummary,
   ProfileBundle,
   RecommendationRecord,
   ScoreRecord,
@@ -94,6 +96,36 @@ export async function getAuditTrail(startupId: string): Promise<AuditEvent[]> {
 
 export async function getActiveWeights(): Promise<WeightConfig> {
   return request('/weights')
+}
+
+export async function discoverStartups(sector: string, limit = 4): Promise<DiscoveryResponse> {
+  return request('/discovery/search', {
+    method: 'POST',
+    body: JSON.stringify({ sector, limit }),
+  })
+}
+
+export async function getPortfolioSummary(): Promise<PortfolioSummary> {
+  return request('/portfolio/summary')
+}
+
+export async function listAllWeights(): Promise<WeightConfig[]> {
+  return request('/weights/all')
+}
+
+export async function proposeWeights(body: {
+  change_reason: string
+  sub_score_driver_tables?: Record<string, unknown> | null
+  final_rollup_weights?: Record<string, number> | null
+}): Promise<WeightConfig> {
+  return request('/weights/propose', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  })
+}
+
+export async function activateWeights(versionId: string): Promise<WeightConfig> {
+  return request(`/weights/${versionId}/activate`, { method: 'POST' })
 }
 
 export { ApiError }

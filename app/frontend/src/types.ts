@@ -24,6 +24,9 @@ export interface StartupProfile {
   expansion_timeline_months: number | null
   synthetic_flag: boolean
   data_source_type: string
+  // Present on live-discovered profiles (data_source_type === 'live_grounded').
+  source_citations?: string[]
+  discovery_note?: string
 }
 
 export interface PaymentProfile {
@@ -69,6 +72,49 @@ export interface ProfileBundle {
   pain: PainPointProfile | null
   signals: ExpansionSignal[]
   score: ScoreRecord | null
+  decathlon: DecathlonTwin | null
+  pipeline_value: PipelineValue | null
+}
+
+export interface DecathlonDimension {
+  key: string
+  label: string
+  score: number
+  top_driver: string
+}
+
+export interface DecathlonTwin {
+  dimensions: DecathlonDimension[]
+}
+
+export interface PipelineValue {
+  estimated_annual_bank_revenue_eur: number
+  breakdown: Record<string, number>
+  basis: string
+}
+
+export interface DiscoveredItem {
+  startup_id: string
+  name: string
+  status: string
+  final_score?: number | null
+  priority_band?: PriorityBand | null
+  score_id?: string | null
+  note?: string | null
+  corroboration_notes?: string[]
+}
+
+export interface DiscoveryResponse {
+  sector: string
+  discovered: DiscoveredItem[]
+  reason: string | null
+}
+
+export interface PortfolioSummary {
+  total_pipeline_value_eur: number
+  band_counts: Record<string, number>
+  scored_count: number
+  total_count: number
 }
 
 export interface DriverScore {

@@ -29,6 +29,7 @@ from .orchestrator import (
 )
 from .orchestrator.audit import log_event
 from .orchestrator.validation import find_duplicate_profile
+from .pipeline_value import estimate_pipeline_value
 from .scoring import ScoringContext, compute_decathlon
 from .seed.data import (
     DEFAULT_WEIGHT_CONFIG,
@@ -162,13 +163,22 @@ def _build_bundle(store, profile) -> ProfileBundle:
         pain=pain,
         signals=signals,
     )
+    score = latest[1] if latest else None
+    pipeline_value = estimate_pipeline_value(
+        annual_revenue_eur=profile.annual_revenue_eur,
+        annual_cross_border_payment_value_eur=(
+            payment.annual_cross_border_payment_value_eur if payment else None
+        ),
+        priority_band=score.priority_band.value if score else None,
+    )
     return ProfileBundle(
         profile=profile,
         payment=payment,
         pain=pain,
         signals=signals,
-        score=latest[1] if latest else None,
+        score=score,
         decathlon=compute_decathlon(ctx),
+        pipeline_value=pipeline_value,
     )
 
 
@@ -187,6 +197,33 @@ def get_profile(startup_id: str, current: TokenPayload = Depends(get_current_use
     if profile is None:
         raise HTTPException(status_code=404, detail=f"No profile found for startup_id={startup_id}")
     return _build_bundle(store, profile)
+
+
+@app.get("/portfolio/summary")
+def portfolio_summary(current: TokenPayload = Depends(get_current_user)):
+    """Deterministic roll-up of indicative pipeline value across all profiles."""
+    store = get_store()
+    bundles = [_build_bundle(store, p) for p in store.list_profiles()]
+
+    total_pipeline_value_eur = 0.0
+    band_counts: dict[str, int] = {}
+    scored_count = 0
+    for bundle in bundles:
+        if bundle.pipeline_value is not None:
+            total_pipeline_value_eur += bundle.pipeline_value.estimated_annual_bank_revenue_eur
+        if bundle.score is not None:
+            scored_count += 1
+            band_key = bundle.score.priority_band.value
+        else:
+            band_key = "unscored"
+        band_counts[band_key] = band_counts.get(band_key, 0) + 1
+
+    return {
+        "total_pipeline_value_eur": total_pipeline_value_eur,
+        "band_counts": band_counts,
+        "scored_count": scored_count,
+        "total_count": len(bundles),
+    }
 
 
 # ------------------------------------------------------------ discovery -----
@@ -270,7 +307,7 @@ def get_active_weights(current: TokenPayload = Depends(get_current_user)):
 
 
 @app.get("/weights/all")
-def list_all_weights(current: TokenPayload = Depends(require_roles(Role.PRODUCT_OWNER, Role.CONTROL_REVIEWER))):
+def list_all_weights(current: TokenPayload = Depends(require_roles(Role.PRODUCT_OWNER, Role.CONTROL_REVIEWER, Role.ADMIN))):
     store = get_store()
     return store.list_weight_configs()
 

@@ -1,0 +1,78 @@
+/*
+ * theme.css — LaunchPad AI brand theme (additive, safe to import).
+ *
+ * Only defines new `--lp-*` custom properties and small `lp-*` utility
+ * classes. Does NOT override global element selectors (body, button, ...);
+ * App.css remains the source of truth for those.
+ */
+
+:root {
+  /* Brand navy palette */
+  --lp-navy: #0a1f44;
+  --lp-navy-2: #10294f;
+  --lp-navy-3: #16345f;
+
+  /* Accent + semantic colors */
+  --lp-accent: #2f6df6;
+  --lp-green: #1f9d55;
+  --lp-amber: #c2810a;
+  --lp-blue: #2f6df6;
+  --lp-grey: #6b7280;
+
+  /* Surfaces */
+  --lp-surface: #ffffff;
+  --lp-surface-muted: #f4f6fb;
+  --lp-border: #e2e8f0;
+  --lp-border-strong: #cbd5e1;
+
+  /* Text tokens */
+  --lp-text: #0f172a;
+  --lp-text-muted: #475569;
+  --lp-text-on-navy: #f8fafc;
+  --lp-text-on-navy-muted: #b9c6de;
+
+  /* Chips / overlays on navy */
+  --lp-navy-chip-bg: rgba(255, 255, 255, 0.1);
+  --lp-navy-chip-border: rgba(255, 255, 255, 0.24);
+
+  /* Priority band colors */
+  --lp-band-high: #1f9d55;
+  --lp-band-monitor: #2f6df6;
+  --lp-band-validate: #c2810a;
+  --lp-band-none: #6b7280;
+
+  /* Shape + elevation */
+  --lp-radius-sm: 6px;
+  --lp-radius: 10px;
+  --lp-radius-lg: 14px;
+  --lp-shadow: 0 1px 2px rgba(10, 31, 68, 0.06), 0 4px 16px rgba(10, 31, 68, 0.08);
+  --lp-shadow-navy: 0 2px 12px rgba(10, 31, 68, 0.28);
+
+  /* Spacing scale */
+  --lp-gap-xs: 4px;
+  --lp-gap-sm: 8px;
+  --lp-gap: 16px;
+  --lp-gap-lg: 24px;
+}
+
+/* Small, opt-in utility classes (prefixed lp-) */
+.lp-surface {
+  background: var(--lp-surface);
+  border: 1px solid var(--lp-border);
+  border-radius: var(--lp-radius);
+  box-shadow: var(--lp-shadow);
+}
+
+.lp-muted {
+  color: var(--lp-text-muted);
+}
+
+.lp-text {
+  color: var(--lp-text);
+}
+
+.lp-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--lp-gap);
+}

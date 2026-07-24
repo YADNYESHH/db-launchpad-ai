@@ -644,3 +644,66 @@ button.reject {
   color: var(--text-muted);
   min-height: 200px;
 }
+
+/* ---- shell: toolbar + views (phase 2) ---- */
+.app-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding: 0.75rem 1.5rem 0;
+}
+.view-nav {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+.view-nav-btn {
+  background: transparent;
+  color: var(--text-muted, #6b7280);
+  border: 1px solid var(--border, #d1d5db);
+  border-radius: 999px;
+  padding: 0.4rem 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.view-nav-btn.active {
+  background: var(--lp-navy, #0a1f44);
+  color: #fff;
+  border-color: var(--lp-navy, #0a1f44);
+}
+.main-content {
+  flex: 1;
+  padding: 0 0.25rem;
+}
+.main-content > .panel {
+  margin: 1rem;
+}
+.portfolio-column {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.twin-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+.discovery-provenance {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border, #d1d5db);
+  border-radius: 8px;
+  background: rgba(47, 109, 246, 0.05);
+}
+.citation-list {
+  margin: 0.4rem 0 0;
+  padding-left: 1.1rem;
+  font-size: 0.82rem;
+  word-break: break-all;
+}
+.citation-list li {
+  margin: 0.2rem 0;
+}
+

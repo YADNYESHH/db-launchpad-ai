@@ -23,9 +23,11 @@ const FILTER_CHIPS: { key: PriorityBand | 'all'; label: string }[] = [
 export default function Portfolio({
   onSelect,
   selectedId,
+  refreshKey,
 }: {
   onSelect: (startupId: string) => void
   selectedId: string | null
+  refreshKey?: number
 }) {
   const [bundles, setBundles] = useState<ProfileBundle[]>([])
   const [loading, setLoading] = useState(true)
@@ -33,10 +35,11 @@ export default function Portfolio({
   const [activeBand, setActiveBand] = useState<PriorityBand | 'all'>('all')
 
   useEffect(() => {
+    setLoading(true)
     listProfiles()
       .then(setBundles)
       .finally(() => setLoading(false))
-  }, [])
+  }, [refreshKey])
 
   const ranked = useMemo(
     () =>
