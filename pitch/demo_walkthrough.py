@@ -101,12 +101,21 @@ def safe(fn, label: str) -> bool:
     return False
 
 
-def click_text(page: Page, text: str, timeout: int = 6000) -> None:
+def click_text(page: Page, text: str, timeout: int = 20000) -> None:
     page.get_by_text(text, exact=False).first.click(timeout=timeout)
 
 
-def click_role(page: Page, role: str, name: str, timeout: int = 6000) -> None:
+def click_role(page: Page, role: str, name: str, timeout: int = 20000) -> None:
     page.get_by_role(role, name=name).first.click(timeout=timeout)
+
+
+def settle(page: Page, timeout: int = 6000) -> None:
+    """Best-effort wait for the page to settle. NEVER raises — a live SPA with
+    ongoing fetches never reaches 'networkidle', so this must not abort the run."""
+    try:
+        page.wait_for_load_state("networkidle", timeout=timeout)
+    except Exception:
+        pass
 
 
 # Real, live companies currently in the deployed portfolio.
@@ -124,18 +133,23 @@ def login(page: Page, email_label: str) -> None:
     Wrapped in safe() by callers so a missing element never aborts the recording.
     """
     def do_login():
-        page.get_by_role("combobox").first.select_option(label=email_label)
+        # Role select is best-effort: the Relationship Manager is the default
+        # option, and an exact-label mismatch must NEVER abort the actual sign-in.
+        try:
+            page.get_by_role("combobox").first.select_option(label=email_label)
+        except Exception:
+            pass
         pw = page.get_by_role("textbox", name="Password")
         pw.fill(PASSWORD)
         click_role(page, "button", "Sign in")
     safe(do_login, f"login as {email_label}")
-    page.wait_for_load_state("networkidle")
+    settle(page)
 
 
 def sign_out(page: Page) -> None:
     """Click 'Sign out' and wait for the login page. Defensive."""
     safe(lambda: click_role(page, "button", "Sign out"), "sign out")
-    page.wait_for_load_state("networkidle")
+    settle(page)
     beat(1.5)
 
 
@@ -149,8 +163,11 @@ ADMIN_LABEL = os.getenv("DEMO_ADMIN_LABEL", "Admin")
 def run(page: Page) -> None:
     # ---- 0. Open ----
     print("Opening", BASE)
-    page.goto(BASE, wait_until="networkidle")
-    beat(1.5)
+    page.goto(BASE, wait_until="domcontentloaded", timeout=60000)
+    # Wait until the SPA is actually interactive (handles Cloud Run cold starts).
+    safe(lambda: page.wait_for_selector("select, .login-card, .app-shell", timeout=60000),
+         "wait for app to load")
+    beat(2.0)
 
     # ---- 1. Login as Relationship Manager ----
     caption(page, "DB LaunchPad AI",
@@ -162,31 +179,28 @@ def run(page: Page) -> None:
     caption(page, "Portfolio value & strategy",
             "Assessment: Strategic vision & business value")
     safe(lambda: click_role(page, "button", "Executive"), "executive view")
-    page.wait_for_load_state("networkidle")
+    settle(page)
     beat(7.0)  # KPIs, pipeline value, band distribution, top opportunities
 
     # ---- 3. Portfolio — real, live companies only ----
     caption(page, "Real companies, discovered live",
             "Assessment: No fabricated data")
     safe(lambda: click_role(page, "button", "Portfolio"), "portfolio view")
-    page.wait_for_load_state("networkidle")
-    beat(2.0)
-    # Filter to LIVE-sourced companies if the source filter is present.
-    safe(lambda: click_role(page, "button", "Live"), "live source filter")
-    beat(3.0)
+    settle(page)
+    # The live /profiles call is slow — wait for the list to actually render.
+    safe(lambda: page.wait_for_selector("ul.portfolio-list li", timeout=60000),
+         "wait for portfolio to load")
+    beat(3.5)  # let judges see the LIVE-badged real companies in the ranked list
 
-    # Open a LIVE company by searching its name.
-    company = LIVE_COMPANIES[0]  # Airwallex
-    def open_live_company():
-        box = page.get_by_role("textbox").first
-        box.fill(company)
-        beat(1.5)
-        page.locator("ul.portfolio-list li").first.click(timeout=6000)
-    safe(open_live_company, f"open live company {company}")
-    page.wait_for_load_state("networkidle")
-    caption(page, f"Live company · {company}",
-            "Assessment: No fabricated data")
-    beat(3.5)
+    # Open the top company (the ranked list already shows LIVE-badged real companies).
+    def open_company():
+        page.locator("ul.portfolio-list li").first.click(timeout=30000)
+    safe(open_company, "open top company")
+    settle(page)
+    beat(1.0)
+    caption(page, "A scored company profile",
+            "Grounded profile · citations · evidence")
+    beat(4.0)
 
     # ---- 4. Twin & value tab ----
     caption(page, "Decathlon digital twin + € value",
@@ -217,47 +231,20 @@ def run(page: Page) -> None:
         box.fill("Who are this company's main competitors?")
         page.get_by_role("button", name="Ask").first.click()
     safe(ask_question, "ask a question")
-    beat(9.0)  # allow the grounded answer to arrive
-
-    # ---- 6. Product Owner proposes a weight change ----
-    sign_out(page)
-    caption(page, "Governed model weights — Product Owner proposes",
-            "Assessment: Solution architecture & governance")
-    safe(lambda: login(page, PO_LABEL), "login as Product Owner")
-    beat(2.0)
-    safe(lambda: click_role(page, "button", "Weights governance"), "weights view (PO)")
-    page.wait_for_load_state("networkidle")
-    beat(3.0)
-    safe(lambda: page.get_by_role("textbox").last.fill(
-        "Increase early-signal weight after RM feedback"), "change reason")
-    beat(2.0)
-    safe(lambda: click_role(page, "button", "Propose"), "propose weight change")
-    beat(3.0)
-
-    # ---- 7. Admin activates — audit-logged ----
-    sign_out(page)
-    caption(page, "Admin activates — every change audit-logged",
-            "Assessment: Secure, compliant deployment")
-    safe(lambda: login(page, ADMIN_LABEL), "login as Admin")
-    beat(2.0)
-    safe(lambda: click_role(page, "button", "Weights governance"), "weights view (Admin)")
-    page.wait_for_load_state("networkidle")
-    beat(2.5)
-    safe(lambda: click_role(page, "button", "Activate"), "activate weight change")
-    beat(3.5)
+    beat(14.0)  # allow the grounded answer to arrive
 
     # ---- 8. Responsible AI ----
     caption(page, "Responsible AI: provenance, guardrails, audit",
             "Assessment: Responsible & ethical AI")
     safe(lambda: click_role(page, "button", "Responsible AI"), "responsible ai view")
-    page.wait_for_load_state("networkidle")
+    settle(page)
     beat(7.0)
 
     # ---- 9. Compare — side-by-side decision support ----
     caption(page, "Side-by-side decision support",
             "Assessment: User experience & adoption")
     safe(lambda: click_role(page, "button", "Compare"), "compare view")
-    page.wait_for_load_state("networkidle")
+    settle(page)
     beat(5.0)
 
     # ---- 10. Close ----
@@ -269,7 +256,7 @@ def run(page: Page) -> None:
 
 def main() -> None:
     REC_DIR.mkdir(parents=True, exist_ok=True)
-    size = {"width": 1512, "height": 944}
+    size = {"width": 1920, "height": 1080}
     launch_args = ["--start-fullscreen", "--no-first-run", "--disable-session-crashed-bubble",
                    "--disable-infobars", "--hide-crash-restore-bubble"]
     with sync_playwright() as p:
@@ -280,6 +267,8 @@ def main() -> None:
             record_video_size=size,
         )
         page = context.new_page()
+        page.set_default_timeout(25000)
+        page.set_default_navigation_timeout(35000)
         video = page.video
         try:
             run(page)
