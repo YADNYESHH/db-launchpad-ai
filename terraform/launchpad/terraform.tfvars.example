@@ -1,0 +1,49 @@
+###############################################################################
+# Example variable values — copy to terraform.tfvars (gitignored) and edit,
+# or use one of the ./environments/*.tfvars files with -var-file.
+###############################################################################
+
+# ---- Required ----
+project_id = "my-gcp-project-id"
+
+# ---- Common overrides ----
+region        = "europe-west1"
+service_name  = "launchpad-ai"
+vertex_model  = "gemini-2.5-flash"
+
+# Firestore multi-region ('eur3' for EU, 'nam5' for US) — immutable once created.
+firestore_location_id = "eur3"
+
+# Sizing
+min_instances = 0
+max_instances = 4
+cpu           = "1"
+memory        = "512Mi"
+
+# Public demo by default; set false to keep private.
+allow_unauthenticated = true
+
+# Leave jwt_secret_value empty to auto-generate a strong secret (recommended).
+# jwt_secret_value = ""
+
+# ---- First-apply bootstrap ----
+# On a brand-new project your app image does not exist yet. Two options:
+#   A) Set use_bootstrap_image = true for the first apply, then build+push your
+#      image and either flip it back to false or just let CI roll the image.
+#   B) Build+push the image first (see docker_build_push_hint output), then apply.
+use_bootstrap_image = true
+
+# ---- Optional: keyless GitHub Actions deploys via Workload Identity ----
+# enable_github_wif = true
+# github_owner      = "YADNYESHH"
+# github_repo       = "db-launchpad-ai"
+
+# ---- Optional: reuse a platform-provided workload SA instead of creating one ----
+# create_runtime_service_account = false
+# runtime_service_account_email  = "workload-sa@my-gcp-project-id.iam.gserviceaccount.com"
+
+labels = {
+  app        = "launchpad-ai"
+  env        = "dev"
+  managed-by = "terraform"
+}

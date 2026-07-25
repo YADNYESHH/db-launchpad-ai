@@ -1,0 +1,19 @@
+###############################################################################
+# Remote state backend (RECOMMENDED for teams / CI).
+#
+# Terraform cannot use variables in a backend block, so fill these in per
+# environment (or pass with `terraform init -backend-config=...`).
+#
+# 1) Create the bucket once (versioned), e.g.:
+#      gcloud storage buckets create gs://YOUR-TFSTATE-BUCKET \
+#        --location=europe-west1 --uniform-bucket-level-access
+#      gcloud storage buckets update gs://YOUR-TFSTATE-BUCKET --versioning
+#
+# 2) Uncomment and set the bucket, then run `terraform init`.
+###############################################################################
+# terraform {
+#   backend "gcs" {
+#     bucket = "YOUR-TFSTATE-BUCKET"
+#     prefix = "launchpad-ai/dev"
+#   }
+# }
